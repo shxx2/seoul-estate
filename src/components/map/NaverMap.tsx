@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useEffect, useState } from "react";
 import { Container as MapDiv, NaverMap as NMap, useNavermaps } from "react-naver-maps";
+import { useNaverMapReady } from "./NaverMapProvider";
 
 interface NaverMapProps {
   center?: { lat: number; lng: number };
@@ -58,18 +59,30 @@ function NaverMapInner({
 
 export default function NaverMap(props: NaverMapProps) {
   const [isClient, setIsClient] = useState(false);
+  const isMapReady = useNaverMapReady();
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  // SSR 시에는 placeholder 렌더링
-  if (!isClient) {
+  // SSR 또는 맵 미준비 시 placeholder 렌더링
+  if (!isClient || !isMapReady) {
     return (
       <div
         className={props.className}
-        style={{ width: "100%", height: "100%", backgroundColor: "#f0f0f0", ...props.style }}
-      />
+        style={{
+          width: "100%",
+          height: "100%",
+          backgroundColor: "#f0f0f0",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#666",
+          ...props.style
+        }}
+      >
+        {isClient && !isMapReady && "지도를 불러오는 중..."}
+      </div>
     );
   }
 

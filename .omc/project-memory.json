@@ -1,0 +1,395 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1772787327408,
+  "projectRoot": "/Users/sehyunshin/play/estate",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "tsconfig.json"
+        ]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "next",
+        "version": "14.2.35",
+        "category": "fullstack"
+      },
+      {
+        "name": "react",
+        "version": "18",
+        "category": "frontend"
+      },
+      {
+        "name": "react-dom",
+        "version": "18",
+        "category": "frontend"
+      }
+    ],
+    "packageManager": "pnpm",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "pnpm build",
+    "testCommand": null,
+    "lintCommand": "pnpm lint",
+    "devCommand": "pnpm dev",
+    "scripts": {
+      "dev": "next dev",
+      "build": "next build",
+      "start": "next start",
+      "lint": "next lint",
+      "fetch-regions": "tsx scripts/fetch-regions.ts"
+    }
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": "type-based"
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "public",
+      "scripts",
+      "src"
+    ],
+    "gitBranches": null
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "public": {
+      "path": "public",
+      "purpose": "Public files",
+      "fileCount": 0,
+      "lastAccessed": 1772787327393,
+      "keyFiles": []
+    },
+    "scripts": {
+      "path": "scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 2,
+      "lastAccessed": 1772787327393,
+      "keyFiles": [
+        "fetch-regions.ts",
+        "prepare-geojson.ts"
+      ]
+    },
+    "src": {
+      "path": "src",
+      "purpose": "Source code",
+      "fileCount": 1,
+      "lastAccessed": 1772787327394,
+      "keyFiles": [
+        "AGENTS.md"
+      ]
+    },
+    "public/data": {
+      "path": "public/data",
+      "purpose": "Data files",
+      "fileCount": 2,
+      "lastAccessed": 1772787327398,
+      "keyFiles": [
+        "seoul-districts.json",
+        "seoul-gu-boundaries.json"
+      ]
+    },
+    "src/app": {
+      "path": "src/app",
+      "purpose": "Application code",
+      "fileCount": 6,
+      "lastAccessed": 1772787327399,
+      "keyFiles": [
+        "error.tsx",
+        "favicon.ico",
+        "globals.css"
+      ]
+    },
+    "src/components": {
+      "path": "src/components",
+      "purpose": "UI components",
+      "fileCount": 0,
+      "lastAccessed": 1772787327399,
+      "keyFiles": []
+    },
+    "src/lib": {
+      "path": "src/lib",
+      "purpose": "Library code",
+      "fileCount": 6,
+      "lastAccessed": 1772787327399,
+      "keyFiles": [
+        "api-response.ts",
+        "constants.ts",
+        "format.ts"
+      ]
+    },
+    "src/types": {
+      "path": "src/types",
+      "purpose": "Type definitions",
+      "fileCount": 4,
+      "lastAccessed": 1772787327399,
+      "keyFiles": [
+        "article.ts",
+        "filter.ts",
+        "region.ts"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "",
+      "accessCount": 15,
+      "lastAccessed": 1772787373988,
+      "type": "directory"
+    },
+    {
+      "path": "src/lib/naver/client.ts",
+      "accessCount": 13,
+      "lastAccessed": 1772807882921,
+      "type": "file"
+    },
+    {
+      "path": "src/components/map/NaverMap.tsx",
+      "accessCount": 8,
+      "lastAccessed": 1772805291986,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/articles/route.ts",
+      "accessCount": 8,
+      "lastAccessed": 1772807548449,
+      "type": "file"
+    },
+    {
+      "path": "src/components/map/NaverMapProvider.tsx",
+      "accessCount": 7,
+      "lastAccessed": 1772791254364,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/transit/route.ts",
+      "accessCount": 6,
+      "lastAccessed": 1772788092222,
+      "type": "file"
+    },
+    {
+      "path": "src",
+      "accessCount": 4,
+      "lastAccessed": 1772787385023,
+      "type": "directory"
+    },
+    {
+      "path": "src/components/map/TransitRouteOverlay.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1772788142948,
+      "type": "file"
+    },
+    {
+      "path": ".env.local",
+      "accessCount": 3,
+      "lastAccessed": 1772787364792,
+      "type": "file"
+    },
+    {
+      "path": ".env.local.example",
+      "accessCount": 3,
+      "lastAccessed": 1772787364809,
+      "type": "file"
+    },
+    {
+      "path": "package.json",
+      "accessCount": 3,
+      "lastAccessed": 1772787375559,
+      "type": "file"
+    },
+    {
+      "path": "src/app/layout.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1772787413738,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/kakao/local.ts",
+      "accessCount": 3,
+      "lastAccessed": 1772788068284,
+      "type": "file"
+    },
+    {
+      "path": "src/hooks/useTransitRoute.ts",
+      "accessCount": 3,
+      "lastAccessed": 1772788105146,
+      "type": "file"
+    },
+    {
+      "path": "src/app/page.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1772789415166,
+      "type": "file"
+    },
+    {
+      "path": "next.config.mjs",
+      "accessCount": 2,
+      "lastAccessed": 1772787379384,
+      "type": "file"
+    },
+    {
+      "path": "src/types/transit.ts",
+      "accessCount": 2,
+      "lastAccessed": 1772788050233,
+      "type": "file"
+    },
+    {
+      "path": "src/store/filterStore.ts",
+      "accessCount": 2,
+      "lastAccessed": 1772790429421,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/cache/server-cache.ts",
+      "accessCount": 2,
+      "lastAccessed": 1772807098637,
+      "type": "file"
+    },
+    {
+      "path": "src/types/article.ts",
+      "accessCount": 2,
+      "lastAccessed": 1772807521393,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/naver/endpoints.ts",
+      "accessCount": 1,
+      "lastAccessed": 1772787647900,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/naver/transform.ts",
+      "accessCount": 1,
+      "lastAccessed": 1772787648301,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/naver/types.ts",
+      "accessCount": 1,
+      "lastAccessed": 1772787648876,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/constants.ts",
+      "accessCount": 1,
+      "lastAccessed": 1772787649085,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/articles/[id]/route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1772787655649,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/api-response.ts",
+      "accessCount": 1,
+      "lastAccessed": 1772787656076,
+      "type": "file"
+    },
+    {
+      "path": "src/hooks/useArticles.ts",
+      "accessCount": 1,
+      "lastAccessed": 1772787657819,
+      "type": "file"
+    },
+    {
+      "path": "src/types/filter.ts",
+      "accessCount": 1,
+      "lastAccessed": 1772787662362,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/region-lookup.ts",
+      "accessCount": 1,
+      "lastAccessed": 1772787662769,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/format.ts",
+      "accessCount": 1,
+      "lastAccessed": 1772787663205,
+      "type": "file"
+    },
+    {
+      "path": "src/components/layout/Sidebar.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1772787663662,
+      "type": "file"
+    },
+    {
+      "path": "src/components/layout/Header.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1772787664014,
+      "type": "file"
+    },
+    {
+      "path": "src/hooks/useArticleDetail.ts",
+      "accessCount": 1,
+      "lastAccessed": 1772787668928,
+      "type": "file"
+    },
+    {
+      "path": "src/components/article/ArticleDetail.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1772787669411,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/tmap/pedestrian.ts",
+      "accessCount": 1,
+      "lastAccessed": 1772787669852,
+      "type": "file"
+    },
+    {
+      "path": "src/AGENTS.md",
+      "accessCount": 1,
+      "lastAccessed": 1772787675626,
+      "type": "file"
+    },
+    {
+      "path": "tsconfig.json",
+      "accessCount": 1,
+      "lastAccessed": 1772787676520,
+      "type": "file"
+    },
+    {
+      "path": "src/hooks/useRegionPolygon.ts",
+      "accessCount": 1,
+      "lastAccessed": 1772790429395,
+      "type": "file"
+    },
+    {
+      "path": "src/components/map/RegionPolygon.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1772791218164,
+      "type": "file"
+    },
+    {
+      "path": "src/components/map/ArticleMarker.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1772791218316,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

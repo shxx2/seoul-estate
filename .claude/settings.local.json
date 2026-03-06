@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "mcp__plugin_oh-my-claudecode_t__state_write",
+      "Bash(pnpm create:*)",
+      "Bash(npm install:*)",
+      "Bash(pnpm:*)",
+      "mcp__plugin_oh-my-claudecode_t__lsp_diagnostics",
+      "Bash(./node_modules/.bin/tsc:*)",
+      "Bash(npx tsc:*)",
+      "Bash(node -e:*)",
+      "Bash(npx tsx:*)",
+      "Bash(python3:*)",
+      "mcp__plugin_oh-my-claudecode_t__lsp_diagnostics_directory",
+      "mcp__ide__getDiagnostics",
+      "mcp__plugin_oh-my-claudecode_t__ast_grep_search",
+      "Bash(tree:*)",
+      "Bash(node --version:*)",
+      "Bash(curl:*)",
+      "Bash(find:*)",
+      "WebFetch(domain:api.ncloud-docs.com)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:zeakd.github.io)",
+      "Bash(npm view:*)",
+      "Bash(grep:*)"
+    ]
+  }
+}

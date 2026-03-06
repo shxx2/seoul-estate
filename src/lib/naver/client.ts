@@ -1,5 +1,5 @@
 import { NAVER_ARTICLE_LIST_URL, NAVER_ARTICLE_DETAIL_URL } from "./endpoints";
-import { NAVER_REQUEST_DELAY_MS, NAVER_MAX_RETRIES, BUILDING_TYPE_TO_NAVER, TRADE_TYPE_TO_NAVER } from "@/lib/constants";
+import { BUILDING_TYPE_TO_NAVER, TRADE_TYPE_TO_NAVER } from "@/lib/constants";
 import type { NaverArticleListResponse } from "./types";
 import type { BuildingType, TradeType } from "@/types/article";
 
@@ -11,40 +11,24 @@ const DEFAULT_HEADERS = {
   "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
 };
 
-/** 지정 ms 만큼 대기 */
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-/** 지수 백오프 재시도 fetch */
-async function fetchWithRetry(
+/** 타임아웃이 있는 fetch (Edge Runtime 호환) */
+async function fetchWithTimeout(
   url: string,
   options: RequestInit,
-  retries = NAVER_MAX_RETRIES
+  timeoutMs = 8000 // Edge 함수 타임아웃(30초) 내에 응답받도록 8초로 설정
 ): Promise<Response> {
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    const res = await fetch(url, options);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-    // 차단 감지: 30초 대기 후 재시도
-    if (res.status === 403 || res.status === 429) {
-      if (attempt < retries) {
-        await delay(30_000);
-        continue;
-      }
-      return res;
-    }
-
-    if (res.ok) return res;
-
-    // 기타 에러: 지수 백오프 (1s, 2s, 4s)
-    if (attempt < retries) {
-      await delay(1000 * Math.pow(2, attempt));
-    } else {
-      return res;
-    }
+  try {
+    const res = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    return res;
+  } finally {
+    clearTimeout(timeoutId);
   }
-  // unreachable but satisfies TS
-  throw new Error("fetchWithRetry: unexpected exit");
 }
 
 export interface ArticleListParams {
@@ -78,7 +62,7 @@ export async function fetchArticleList(
     }
   }
 
-  const res = await fetchWithRetry(url.toString(), {
+  const res = await fetchWithTimeout(url.toString(), {
     headers: DEFAULT_HEADERS,
     cache: "no-store",
   });
@@ -90,7 +74,6 @@ export async function fetchArticleList(
   }
 
   const json = await res.json() as NaverArticleListResponse;
-  await delay(NAVER_REQUEST_DELAY_MS);
   return json;
 }
 
@@ -123,7 +106,7 @@ export async function fetchArticleDetail(
   url.searchParams.set("realEstateType", BUILDING_TYPE_TO_NAVER[buildingType]);
   url.searchParams.set("tradeType", TRADE_TYPE_TO_NAVER[tradeType]);
 
-  const res = await fetchWithRetry(url.toString(), {
+  const res = await fetchWithTimeout(url.toString(), {
     headers: DEFAULT_HEADERS,
     cache: "no-store",
   });
@@ -135,6 +118,5 @@ export async function fetchArticleDetail(
   }
 
   const json = await res.json() as NaverArticleDetailResponse;
-  await delay(NAVER_REQUEST_DELAY_MS);
   return json;
 }

@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"sleep 30 && curl -s \\\"https://simba-estate.vercel.app/api/articles?guCode=1120000000&tradeTypes=SALE&buildingTypes=APT&page=1&pageSize=3\\\" | jq '.'\",\"timeout\":60000,\"description\":\"Test API...",
+  "error": "Exit code 5\njq: parse error: Invalid numeric literal at line 1, column 3",
+  "timestamp": "2026-03-06T14:36:35.298Z",
+  "retry_count": 1
+}

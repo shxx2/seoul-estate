@@ -151,21 +151,21 @@
   },
   "hotPaths": [
     {
+      "path": "src/app/api/articles/route.ts",
+      "accessCount": 22,
+      "lastAccessed": 1772808921081,
+      "type": "file"
+    },
+    {
       "path": "",
       "accessCount": 21,
       "lastAccessed": 1772808086924,
       "type": "directory"
     },
     {
-      "path": "src/app/api/articles/route.ts",
-      "accessCount": 18,
-      "lastAccessed": 1772808340611,
-      "type": "file"
-    },
-    {
       "path": "src/lib/naver/client.ts",
-      "accessCount": 15,
-      "lastAccessed": 1772808159061,
+      "accessCount": 18,
+      "lastAccessed": 1772808674732,
       "type": "file"
     },
     {
@@ -175,16 +175,16 @@
       "type": "file"
     },
     {
+      "path": "src",
+      "accessCount": 8,
+      "lastAccessed": 1772808600252,
+      "type": "directory"
+    },
+    {
       "path": "src/components/map/NaverMapProvider.tsx",
       "accessCount": 7,
       "lastAccessed": 1772791254364,
       "type": "file"
-    },
-    {
-      "path": "src",
-      "accessCount": 7,
-      "lastAccessed": 1772808160527,
-      "type": "directory"
     },
     {
       "path": "src/app/api/transit/route.ts",
@@ -217,15 +217,27 @@
       "type": "file"
     },
     {
-      "path": "src/components/map/TransitRouteOverlay.tsx",
-      "accessCount": 4,
-      "lastAccessed": 1772788142948,
+      "path": "src/lib/region-lookup.ts",
+      "accessCount": 5,
+      "lastAccessed": 1772808628191,
       "type": "file"
     },
     {
-      "path": "src/lib/region-lookup.ts",
+      "path": "src/lib/naver/endpoints.ts",
+      "accessCount": 5,
+      "lastAccessed": 1772808675241,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/cache/server-cache.ts",
+      "accessCount": 5,
+      "lastAccessed": 1772808860317,
+      "type": "file"
+    },
+    {
+      "path": "src/components/map/TransitRouteOverlay.tsx",
       "accessCount": 4,
-      "lastAccessed": 1772808086280,
+      "lastAccessed": 1772788142948,
       "type": "file"
     },
     {
@@ -242,8 +254,8 @@
     },
     {
       "path": ".env.local",
-      "accessCount": 3,
-      "lastAccessed": 1772787364792,
+      "accessCount": 4,
+      "lastAccessed": 1772808631708,
       "type": "file"
     },
     {
@@ -283,6 +295,12 @@
       "type": "file"
     },
     {
+      "path": "src/app/api/articles/[id]/route.ts",
+      "accessCount": 3,
+      "lastAccessed": 1772808632569,
+      "type": "file"
+    },
+    {
       "path": "next.config.mjs",
       "accessCount": 2,
       "lastAccessed": 1772787379384,
@@ -292,12 +310,6 @@
       "path": "src/types/transit.ts",
       "accessCount": 2,
       "lastAccessed": 1772788050233,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/cache/server-cache.ts",
-      "accessCount": 2,
-      "lastAccessed": 1772807098637,
       "type": "file"
     },
     {
@@ -325,12 +337,6 @@
       "type": "file"
     },
     {
-      "path": "src/lib/naver/endpoints.ts",
-      "accessCount": 2,
-      "lastAccessed": 1772808164772,
-      "type": "file"
-    },
-    {
       "path": "src/lib/naver/types.ts",
       "accessCount": 2,
       "lastAccessed": 1772808165278,
@@ -340,12 +346,6 @@
       "path": "src/lib/constants.ts",
       "accessCount": 1,
       "lastAccessed": 1772787649085,
-      "type": "file"
-    },
-    {
-      "path": "src/app/api/articles/[id]/route.ts",
-      "accessCount": 1,
-      "lastAccessed": 1772787655649,
       "type": "file"
     },
     {
@@ -418,6 +418,12 @@
       "path": "src/components/article/ArticleList.tsx",
       "accessCount": 1,
       "lastAccessed": 1772808095320,
+      "type": "file"
+    },
+    {
+      "path": "vercel.json",
+      "accessCount": 1,
+      "lastAccessed": 1772808931737,
       "type": "file"
     }
   ],

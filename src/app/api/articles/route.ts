@@ -8,8 +8,7 @@ import { apiSuccess, apiError } from '@/lib/api-response';
 import { TRADE_TYPE_TO_NAVER, BUILDING_TYPE_TO_NAVER } from '@/lib/constants';
 import type { Article, TradeType, BuildingType } from '@/types/article';
 
-// Edge Runtime 사용 - Cloudflare 네트워크에서 실행되어 다른 IP 대역 사용
-export const runtime = 'edge';
+// Node.js Runtime 사용 - Vercel Seoul 리전(icn1)에서 실행
 
 // 서울 주요 지역 샘플 매물 데이터 (API 실패 시 fallback)
 const SAMPLE_ARTICLES: Article[] = [

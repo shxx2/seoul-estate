@@ -180,3 +180,9 @@
 {"t":0,"agent":"ae48863","agent_type":"explore","event":"agent_stop","success":true,"duration_ms":48871}
 {"t":0,"agent":"aa16f95","agent_type":"debugger","event":"agent_stop","success":true,"duration_ms":99346}
 {"t":0,"agent":"a49f42d","agent_type":"architect","event":"agent_stop","success":true,"duration_ms":183943}
+{"t":0,"agent":"aac3584","agent_type":"debugger","event":"agent_start","parent_mode":"none"}
+{"t":0,"agent":"a777157","agent_type":"debugger","event":"agent_start","parent_mode":"none"}
+{"t":0,"agent":"ad01bdc","agent_type":"debugger","event":"agent_start","parent_mode":"none"}
+{"t":0,"agent":"ad01bdc","agent_type":"debugger","event":"agent_stop","success":true,"duration_ms":57172}
+{"t":0,"agent":"aac3584","agent_type":"debugger","event":"agent_stop","success":true,"duration_ms":73691}
+{"t":0,"agent":"a777157","agent_type":"debugger","event":"agent_stop","success":true,"duration_ms":318646}

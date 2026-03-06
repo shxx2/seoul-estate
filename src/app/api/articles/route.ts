@@ -8,6 +8,9 @@ import { apiSuccess, apiError } from '@/lib/api-response';
 import { TRADE_TYPE_TO_NAVER, BUILDING_TYPE_TO_NAVER } from '@/lib/constants';
 import type { Article, TradeType, BuildingType } from '@/types/article';
 
+// Edge Runtime 사용 - Cloudflare 네트워크에서 실행되어 다른 IP 대역 사용
+export const runtime = 'edge';
+
 // 프론트엔드 필터 형식을 받는 스키마
 const querySchema = z.object({
   // 지역: guCode 또는 dongCode (cortarNo로 사용)

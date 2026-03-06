@@ -1,11 +1,7 @@
-import pLimit from "p-limit";
 import { NAVER_ARTICLE_LIST_URL, NAVER_ARTICLE_DETAIL_URL } from "./endpoints";
 import { NAVER_REQUEST_DELAY_MS, NAVER_MAX_RETRIES, BUILDING_TYPE_TO_NAVER, TRADE_TYPE_TO_NAVER } from "@/lib/constants";
 import type { NaverArticleListResponse } from "./types";
 import type { BuildingType, TradeType } from "@/types/article";
-
-// 동시 요청 1개로 제한
-const limit = pLimit(1);
 
 const DEFAULT_HEADERS = {
   "User-Agent":
@@ -74,30 +70,28 @@ export interface ArticleListParams {
 export async function fetchArticleList(
   params: ArticleListParams
 ): Promise<NaverArticleListResponse> {
-  return limit(async () => {
-    const url = new URL(NAVER_ARTICLE_LIST_URL);
-    const p = params as unknown as Record<string, string | number | undefined>;
-    for (const [key, value] of Object.entries(p)) {
-      if (value !== undefined) {
-        url.searchParams.set(key, String(value));
-      }
+  const url = new URL(NAVER_ARTICLE_LIST_URL);
+  const p = params as unknown as Record<string, string | number | undefined>;
+  for (const [key, value] of Object.entries(p)) {
+    if (value !== undefined) {
+      url.searchParams.set(key, String(value));
     }
+  }
 
-    const res = await fetchWithRetry(url.toString(), {
-      headers: DEFAULT_HEADERS,
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      throw new Error(
-        `fetchArticleList failed: ${res.status} ${res.statusText}`
-      );
-    }
-
-    const json = await res.json() as NaverArticleListResponse;
-    await delay(NAVER_REQUEST_DELAY_MS);
-    return json;
+  const res = await fetchWithRetry(url.toString(), {
+    headers: DEFAULT_HEADERS,
+    cache: "no-store",
   });
+
+  if (!res.ok) {
+    throw new Error(
+      `fetchArticleList failed: ${res.status} ${res.statusText}`
+    );
+  }
+
+  const json = await res.json() as NaverArticleListResponse;
+  await delay(NAVER_REQUEST_DELAY_MS);
+  return json;
 }
 
 export interface NaverArticleDetailResponse {
@@ -124,25 +118,23 @@ export async function fetchArticleDetail(
   buildingType: BuildingType,
   tradeType: TradeType
 ): Promise<NaverArticleDetailResponse> {
-  return limit(async () => {
-    const url = new URL(NAVER_ARTICLE_DETAIL_URL);
-    url.searchParams.set("articleId", id);
-    url.searchParams.set("realEstateType", BUILDING_TYPE_TO_NAVER[buildingType]);
-    url.searchParams.set("tradeType", TRADE_TYPE_TO_NAVER[tradeType]);
+  const url = new URL(NAVER_ARTICLE_DETAIL_URL);
+  url.searchParams.set("articleId", id);
+  url.searchParams.set("realEstateType", BUILDING_TYPE_TO_NAVER[buildingType]);
+  url.searchParams.set("tradeType", TRADE_TYPE_TO_NAVER[tradeType]);
 
-    const res = await fetchWithRetry(url.toString(), {
-      headers: DEFAULT_HEADERS,
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      throw new Error(
-        `fetchArticleDetail failed: ${res.status} ${res.statusText}`
-      );
-    }
-
-    const json = await res.json() as NaverArticleDetailResponse;
-    await delay(NAVER_REQUEST_DELAY_MS);
-    return json;
+  const res = await fetchWithRetry(url.toString(), {
+    headers: DEFAULT_HEADERS,
+    cache: "no-store",
   });
+
+  if (!res.ok) {
+    throw new Error(
+      `fetchArticleDetail failed: ${res.status} ${res.statusText}`
+    );
+  }
+
+  const json = await res.json() as NaverArticleDetailResponse;
+  await delay(NAVER_REQUEST_DELAY_MS);
+  return json;
 }

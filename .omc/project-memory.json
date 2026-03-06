@@ -152,14 +152,20 @@
   "hotPaths": [
     {
       "path": "",
-      "accessCount": 15,
-      "lastAccessed": 1772787373988,
+      "accessCount": 21,
+      "lastAccessed": 1772808086924,
       "type": "directory"
     },
     {
+      "path": "src/app/api/articles/route.ts",
+      "accessCount": 18,
+      "lastAccessed": 1772808340611,
+      "type": "file"
+    },
+    {
       "path": "src/lib/naver/client.ts",
-      "accessCount": 13,
-      "lastAccessed": 1772807882921,
+      "accessCount": 15,
+      "lastAccessed": 1772808159061,
       "type": "file"
     },
     {
@@ -169,16 +175,16 @@
       "type": "file"
     },
     {
-      "path": "src/app/api/articles/route.ts",
-      "accessCount": 8,
-      "lastAccessed": 1772807548449,
-      "type": "file"
-    },
-    {
       "path": "src/components/map/NaverMapProvider.tsx",
       "accessCount": 7,
       "lastAccessed": 1772791254364,
       "type": "file"
+    },
+    {
+      "path": "src",
+      "accessCount": 7,
+      "lastAccessed": 1772808160527,
+      "type": "directory"
     },
     {
       "path": "src/app/api/transit/route.ts",
@@ -187,15 +193,51 @@
       "type": "file"
     },
     {
-      "path": "src",
-      "accessCount": 4,
-      "lastAccessed": 1772787385023,
-      "type": "directory"
+      "path": "src/app/page.tsx",
+      "accessCount": 6,
+      "lastAccessed": 1772808089226,
+      "type": "file"
+    },
+    {
+      "path": "src/components/search/RegionSearch.tsx",
+      "accessCount": 6,
+      "lastAccessed": 1772808126639,
+      "type": "file"
+    },
+    {
+      "path": "src/store/filterStore.ts",
+      "accessCount": 5,
+      "lastAccessed": 1772808092160,
+      "type": "file"
+    },
+    {
+      "path": "src/hooks/useArticles.ts",
+      "accessCount": 5,
+      "lastAccessed": 1772808172538,
+      "type": "file"
     },
     {
       "path": "src/components/map/TransitRouteOverlay.tsx",
       "accessCount": 4,
       "lastAccessed": 1772788142948,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/region-lookup.ts",
+      "accessCount": 4,
+      "lastAccessed": 1772808086280,
+      "type": "file"
+    },
+    {
+      "path": "src/types/filter.ts",
+      "accessCount": 4,
+      "lastAccessed": 1772808099371,
+      "type": "file"
+    },
+    {
+      "path": "src/components/layout/Sidebar.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1772808106565,
       "type": "file"
     },
     {
@@ -235,9 +277,9 @@
       "type": "file"
     },
     {
-      "path": "src/app/page.tsx",
+      "path": "src/lib/api-response.ts",
       "accessCount": 3,
-      "lastAccessed": 1772789415166,
+      "lastAccessed": 1772808165370,
       "type": "file"
     },
     {
@@ -253,12 +295,6 @@
       "type": "file"
     },
     {
-      "path": "src/store/filterStore.ts",
-      "accessCount": 2,
-      "lastAccessed": 1772790429421,
-      "type": "file"
-    },
-    {
       "path": "src/lib/cache/server-cache.ts",
       "accessCount": 2,
       "lastAccessed": 1772807098637,
@@ -271,21 +307,33 @@
       "type": "file"
     },
     {
-      "path": "src/lib/naver/endpoints.ts",
-      "accessCount": 1,
-      "lastAccessed": 1772787647900,
+      "path": "src/components/layout/Header.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1772808087013,
+      "type": "file"
+    },
+    {
+      "path": "src/components/filter/FilterPanel.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1772808108990,
       "type": "file"
     },
     {
       "path": "src/lib/naver/transform.ts",
-      "accessCount": 1,
-      "lastAccessed": 1772787648301,
+      "accessCount": 2,
+      "lastAccessed": 1772808159553,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/naver/endpoints.ts",
+      "accessCount": 2,
+      "lastAccessed": 1772808164772,
       "type": "file"
     },
     {
       "path": "src/lib/naver/types.ts",
-      "accessCount": 1,
-      "lastAccessed": 1772787648876,
+      "accessCount": 2,
+      "lastAccessed": 1772808165278,
       "type": "file"
     },
     {
@@ -301,45 +349,9 @@
       "type": "file"
     },
     {
-      "path": "src/lib/api-response.ts",
-      "accessCount": 1,
-      "lastAccessed": 1772787656076,
-      "type": "file"
-    },
-    {
-      "path": "src/hooks/useArticles.ts",
-      "accessCount": 1,
-      "lastAccessed": 1772787657819,
-      "type": "file"
-    },
-    {
-      "path": "src/types/filter.ts",
-      "accessCount": 1,
-      "lastAccessed": 1772787662362,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/region-lookup.ts",
-      "accessCount": 1,
-      "lastAccessed": 1772787662769,
-      "type": "file"
-    },
-    {
       "path": "src/lib/format.ts",
       "accessCount": 1,
       "lastAccessed": 1772787663205,
-      "type": "file"
-    },
-    {
-      "path": "src/components/layout/Sidebar.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1772787663662,
-      "type": "file"
-    },
-    {
-      "path": "src/components/layout/Header.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1772787664014,
       "type": "file"
     },
     {
@@ -388,6 +400,24 @@
       "path": "src/components/map/ArticleMarker.tsx",
       "accessCount": 1,
       "lastAccessed": 1772791218316,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/region-codes.ts",
+      "accessCount": 1,
+      "lastAccessed": 1772808086056,
+      "type": "file"
+    },
+    {
+      "path": "src/types/region.ts",
+      "accessCount": 1,
+      "lastAccessed": 1772808086521,
+      "type": "file"
+    },
+    {
+      "path": "src/components/article/ArticleList.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1772808095320,
       "type": "file"
     }
   ],

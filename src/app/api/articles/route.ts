@@ -173,6 +173,169 @@ const SAMPLE_ARTICLES: Article[] = [
     thumbnailUrl: null,
     hasDetailInfo: false,
   },
+  // 성동구 샘플
+  {
+    id: 'sample-6',
+    articleName: '트리마제',
+    buildingType: 'APT',
+    tradeType: 'SALE',
+    address: '서울시 성동구 성수동1가 123',
+    roadAddress: '서울시 성동구 왕십리로 123',
+    gu: '성동구',
+    dong: '성수동1가',
+    lat: 37.5445,
+    lng: 127.0560,
+    dealPrice: 220000,
+    deposit: null,
+    monthlyRent: null,
+    priceText: '22억',
+    supplyArea: 132.23,
+    exclusiveArea: 99.17,
+    supplyAreaPyeong: 40,
+    exclusiveAreaPyeong: 30,
+    floor: '18/32',
+    totalFloor: 32,
+    buildYear: '2020',
+    direction: '남향',
+    roomCount: 4,
+    bathroomCount: 2,
+    description: '성수동 랜드마크, 한강뷰',
+    confirmDate: '2024-01-15',
+    agentName: '성수부동산',
+    articleUrl: 'https://m.land.naver.com/article/sample-6',
+    thumbnailUrl: null,
+    hasDetailInfo: false,
+  },
+  {
+    id: 'sample-7',
+    articleName: '서울숲 리버뷰자이',
+    buildingType: 'APT',
+    tradeType: 'JEONSE',
+    address: '서울시 성동구 성수동2가 456',
+    roadAddress: '서울시 성동구 서울숲길 456',
+    gu: '성동구',
+    dong: '성수동2가',
+    lat: 37.5471,
+    lng: 127.0423,
+    dealPrice: null,
+    deposit: 95000,
+    monthlyRent: null,
+    priceText: '전세 9억 5,000',
+    supplyArea: 99.17,
+    exclusiveArea: 74.38,
+    supplyAreaPyeong: 30,
+    exclusiveAreaPyeong: 22.5,
+    floor: '12/25',
+    totalFloor: 25,
+    buildYear: '2019',
+    direction: '동향',
+    roomCount: 3,
+    bathroomCount: 2,
+    description: '서울숲 인접, 초역세권',
+    confirmDate: '2024-01-14',
+    agentName: '서울숲공인중개사',
+    articleUrl: 'https://m.land.naver.com/article/sample-7',
+    thumbnailUrl: null,
+    hasDetailInfo: false,
+  },
+  {
+    id: 'sample-8',
+    articleName: '왕십리 센트라스',
+    buildingType: 'APT',
+    tradeType: 'SALE',
+    address: '서울시 성동구 행당동 789',
+    roadAddress: '서울시 성동구 행당로 789',
+    gu: '성동구',
+    dong: '행당동',
+    lat: 37.5614,
+    lng: 127.0369,
+    dealPrice: 125000,
+    deposit: null,
+    monthlyRent: null,
+    priceText: '12억 5,000',
+    supplyArea: 84.99,
+    exclusiveArea: 59.97,
+    supplyAreaPyeong: 25.7,
+    exclusiveAreaPyeong: 18.1,
+    floor: '8/20',
+    totalFloor: 20,
+    buildYear: '2015',
+    direction: '남서향',
+    roomCount: 3,
+    bathroomCount: 1,
+    description: '왕십리역 도보 5분',
+    confirmDate: '2024-01-13',
+    agentName: '행당부동산',
+    articleUrl: 'https://m.land.naver.com/article/sample-8',
+    thumbnailUrl: null,
+    hasDetailInfo: false,
+  },
+  // 마포구 샘플
+  {
+    id: 'sample-9',
+    articleName: '마포래미안푸르지오',
+    buildingType: 'APT',
+    tradeType: 'SALE',
+    address: '서울시 마포구 아현동 123',
+    roadAddress: '서울시 마포구 마포대로 123',
+    gu: '마포구',
+    dong: '아현동',
+    lat: 37.5516,
+    lng: 126.9565,
+    dealPrice: 175000,
+    deposit: null,
+    monthlyRent: null,
+    priceText: '17억 5,000',
+    supplyArea: 112.45,
+    exclusiveArea: 84.99,
+    supplyAreaPyeong: 34,
+    exclusiveAreaPyeong: 25.7,
+    floor: '20/35',
+    totalFloor: 35,
+    buildYear: '2014',
+    direction: '남향',
+    roomCount: 4,
+    bathroomCount: 2,
+    description: '아현역 초역세권, 대단지',
+    confirmDate: '2024-01-12',
+    agentName: '마포부동산',
+    articleUrl: 'https://m.land.naver.com/article/sample-9',
+    thumbnailUrl: null,
+    hasDetailInfo: false,
+  },
+  // 송파구 샘플
+  {
+    id: 'sample-10',
+    articleName: '잠실엘스',
+    buildingType: 'APT',
+    tradeType: 'SALE',
+    address: '서울시 송파구 잠실동 456',
+    roadAddress: '서울시 송파구 올림픽로 456',
+    gu: '송파구',
+    dong: '잠실동',
+    lat: 37.5133,
+    lng: 127.1028,
+    dealPrice: 280000,
+    deposit: null,
+    monthlyRent: null,
+    priceText: '28억',
+    supplyArea: 132.23,
+    exclusiveArea: 99.17,
+    supplyAreaPyeong: 40,
+    exclusiveAreaPyeong: 30,
+    floor: '22/33',
+    totalFloor: 33,
+    buildYear: '2008',
+    direction: '남향',
+    roomCount: 4,
+    bathroomCount: 2,
+    description: '잠실 대장 아파트',
+    confirmDate: '2024-01-11',
+    agentName: '잠실공인중개사',
+    articleUrl: 'https://m.land.naver.com/article/sample-10',
+    thumbnailUrl: null,
+    hasDetailInfo: false,
+  },
 ];
 
 // 프론트엔드 필터 형식을 받는 스키마
@@ -330,6 +493,12 @@ export async function GET(req: NextRequest) {
     });
 
     const articles = (naverResponse.body ?? []).map(transformNaverArticle);
+
+    // 네이버 API가 빈 결과를 반환하면 (Vercel IP 차단 등) 샘플 데이터로 fallback
+    if (articles.length === 0) {
+      throw new Error('Naver API returned empty results - using sample data');
+    }
+
     const total = articles.length;
 
     const result = { articles, total };
@@ -346,8 +515,27 @@ export async function GET(req: NextRequest) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     console.error('Naver API error:', message, '- returning sample data');
 
+    // guCode를 구 이름으로 매핑
+    const guCodeToName: Record<string, string> = {
+      '1168000000': '강남구',
+      '1165000000': '서초구',
+      '1120000000': '성동구',
+      '1144000000': '마포구',
+      '1171000000': '송파구',
+      '1121000000': '광진구',
+      '1126000000': '동대문구',
+      '1129000000': '성북구',
+      '1174000000': '강동구',
+      '1156000000': '영등포구',
+    };
+
     // API 실패 시 샘플 데이터 반환 (Vercel에서 네이버 API 차단 대응)
     const filteredSamples = SAMPLE_ARTICLES.filter(article => {
+      // 지역 필터 (guCode가 있으면 해당 구의 매물만)
+      if (cortarNo) {
+        const guName = guCodeToName[cortarNo];
+        if (guName && article.gu !== guName) return false;
+      }
       // 거래 유형 필터
       if (params.tradeTypes) {
         const types = Array.isArray(params.tradeTypes) ? params.tradeTypes : [params.tradeTypes];

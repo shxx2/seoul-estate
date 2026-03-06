@@ -174,3 +174,9 @@
 {"t":0,"agent":"a4e53d9","agent_type":"unknown","event":"agent_stop","success":true}
 {"t":0,"agent":"a67f783","agent_type":"unknown","event":"agent_stop","success":true}
 {"t":0,"agent":"a4d5ca4","agent_type":"unknown","event":"agent_stop","success":true}
+{"t":0,"agent":"aa16f95","agent_type":"debugger","event":"agent_start","parent_mode":"none"}
+{"t":0,"agent":"a49f42d","agent_type":"architect","event":"agent_start","parent_mode":"none"}
+{"t":0,"agent":"ae48863","agent_type":"explore","event":"agent_start","parent_mode":"none"}
+{"t":0,"agent":"ae48863","agent_type":"explore","event":"agent_stop","success":true,"duration_ms":48871}
+{"t":0,"agent":"aa16f95","agent_type":"debugger","event":"agent_stop","success":true,"duration_ms":99346}
+{"t":0,"agent":"a49f42d","agent_type":"architect","event":"agent_stop","success":true,"duration_ms":183943}

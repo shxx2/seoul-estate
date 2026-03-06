@@ -52,6 +52,7 @@ export default function RegionSearch({
   className = "",
 }: RegionSearchProps) {
   const setFilter = useFilterStore((s) => s.setFilter);
+  const triggerSearch = useFilterStore((s) => s.triggerSearch);
 
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Region[]>([]);
@@ -109,6 +110,12 @@ export default function RegionSearch({
     [setFilter]
   );
 
+  // ─── 검색 실행 ────────────────────────────
+
+  const handleSearch = useCallback(() => {
+    triggerSearch();
+  }, [triggerSearch]);
+
   // ─── 입력 초기화 ──────────────────────────
 
   const handleClear = useCallback(() => {
@@ -146,6 +153,7 @@ export default function RegionSearch({
           if (activeIndex >= 0 && results[activeIndex]) {
             handleSelect(results[activeIndex]);
           }
+          handleSearch();
           break;
         case "Escape":
           setIsOpen(false);
@@ -154,7 +162,7 @@ export default function RegionSearch({
           break;
       }
     },
-    [isOpen, activeIndex, results, handleSelect]
+    [isOpen, activeIndex, results, handleSelect, handleSearch]
   );
 
   // ─── 외부 클릭 시 드롭다운 닫기 ──────────
@@ -183,55 +191,64 @@ export default function RegionSearch({
 
   return (
     <div ref={containerRef} className={`relative ${className}`}>
-      {/* 입력창 */}
-      <div className="relative flex items-center">
-        <Search
-          size={14}
-          aria-hidden="true"
-          className="absolute left-3 text-gray-400 pointer-events-none"
-        />
-        <input
-          ref={inputRef}
-          type="text"
-          role="combobox"
-          aria-autocomplete="list"
-          aria-expanded={isOpen}
-          aria-controls={isOpen ? listboxId : undefined}
-          aria-activedescendant={
-            activeIndex >= 0 ? `region-option-${activeIndex}` : undefined
-          }
-          value={query}
-          onChange={handleChange}
-          onKeyDown={handleKeyDown}
-          onFocus={() => {
-            if (results.length > 0) setIsOpen(true);
-          }}
-          placeholder={placeholder}
-          className={[
-            "w-full pl-8 pr-8 py-2",
-            "text-sm text-gray-900 placeholder-gray-400",
-            "border rounded-lg bg-white",
-            "transition-all duration-150",
-            selectedLabel
-              ? "border-blue-400 ring-1 ring-blue-100"
-              : "border-gray-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-100",
-            "focus:outline-none",
-          ]
-            .join(" ")
-            .trim()}
-          autoComplete="off"
-          spellCheck={false}
-        />
-        {query && (
-          <button
-            type="button"
-            onClick={handleClear}
-            className="absolute right-2.5 text-gray-400 hover:text-gray-600 transition-colors focus-visible:outline-none"
-            aria-label="검색어 지우기"
-          >
-            <X size={14} aria-hidden="true" />
-          </button>
-        )}
+      {/* 입력창 + 검색 버튼 */}
+      <div className="flex items-center gap-2">
+        <div className="relative flex items-center flex-1">
+          <Search
+            size={14}
+            aria-hidden="true"
+            className="absolute left-3 text-gray-400 pointer-events-none"
+          />
+          <input
+            ref={inputRef}
+            type="text"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-expanded={isOpen}
+            aria-controls={isOpen ? listboxId : undefined}
+            aria-activedescendant={
+              activeIndex >= 0 ? `region-option-${activeIndex}` : undefined
+            }
+            value={query}
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
+            onFocus={() => {
+              if (results.length > 0) setIsOpen(true);
+            }}
+            placeholder={placeholder}
+            className={[
+              "w-full pl-8 pr-8 py-2",
+              "text-sm text-gray-900 placeholder-gray-400",
+              "border rounded-lg bg-white",
+              "transition-all duration-150",
+              selectedLabel
+                ? "border-blue-400 ring-1 ring-blue-100"
+                : "border-gray-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-100",
+              "focus:outline-none",
+            ]
+              .join(" ")
+              .trim()}
+            autoComplete="off"
+            spellCheck={false}
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="absolute right-2.5 text-gray-400 hover:text-gray-600 transition-colors focus-visible:outline-none"
+              aria-label="검색어 지우기"
+            >
+              <X size={14} aria-hidden="true" />
+            </button>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={handleSearch}
+          className="px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shrink-0"
+        >
+          검색
+        </button>
       </div>
 
       {/* 자동완성 드롭다운 */}

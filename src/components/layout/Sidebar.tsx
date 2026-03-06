@@ -3,7 +3,7 @@
  * Sidebar - 좌측 사이드바
  * FilterPanel과 ArticleList를 포함하는 컨테이너
  */
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import type { Article } from "@/types/article";
 import FilterPanel from "@/components/filter/FilterPanel";
 import ArticleList from "@/components/article/ArticleList";
@@ -41,22 +41,37 @@ export default function Sidebar({
   onRetry,
 }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [filterCollapsed, setFilterCollapsed] = useState(false);
+  const prevIsLoading = useRef(isLoading);
+
+  // 검색 완료(isLoading false로 전환) 시 필터 자동 접기
+  useEffect(() => {
+    if (prevIsLoading.current && !isLoading && articles.length > 0) {
+      setFilterCollapsed(true);
+    }
+    prevIsLoading.current = isLoading;
+  }, [isLoading, articles.length]);
 
   const emptyState = error ? "error" : articles.length === 0 && !isLoading ? "empty" : "initial";
 
   return (
+    // relative: 접기 버튼의 absolute 기준점을 이 요소로 설정
+    // overflow-hidden은 isCollapsed 시에만 적용해 버튼이 잘리지 않도록 함
     <aside
       className={[
-        "h-full bg-gray-50 border-r border-gray-200 flex flex-col transition-all duration-300",
+        "relative h-full bg-gray-50 border-r border-gray-200 flex flex-col transition-all duration-300",
         isCollapsed ? "w-0 overflow-hidden" : "w-[360px]",
       ].join(" ")}
     >
-      {/* 접기 버튼 */}
+      {/* 접기 버튼: aside 우측 끝에 붙는 탭 형태 */}
       <button
         type="button"
         onClick={() => setIsCollapsed(!isCollapsed)}
         className={[
-          "absolute top-1/2 -translate-y-1/2 z-10 w-5 h-12 bg-white border border-gray-200 rounded-r-md flex items-center justify-center hover:bg-gray-50 transition-colors",
+          "absolute top-1/2 -translate-y-1/2 z-10",
+          "w-5 h-12 bg-white border border-gray-200 rounded-r-md",
+          "flex items-center justify-center",
+          "hover:bg-gray-50 transition-colors",
           isCollapsed ? "left-0" : "left-[360px]",
         ].join(" ")}
         aria-label={isCollapsed ? "사이드바 열기" : "사이드바 닫기"}
@@ -68,7 +83,7 @@ export default function Sidebar({
         <>
           {/* 필터 패널 */}
           <div className="p-3 border-b border-gray-200">
-            <FilterPanel />
+            <FilterPanel collapsed={filterCollapsed} />
           </div>
 
           {/* 매물 목록 */}

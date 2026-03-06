@@ -76,7 +76,7 @@ export function useArticles(filters: FilterState, options: UseArticlesOptions) {
     Error
   >(key, fetcher, {
     revalidateOnFocus: false,
-    dedupingInterval: 300000,
+    dedupingInterval: 2000, // 2초 - 연속 클릭 방지 수준으로 축소
   });
 
   return {

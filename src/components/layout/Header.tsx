@@ -12,7 +12,7 @@ export default function Header() {
       <div className="flex items-center gap-2">
         <Home size={20} className="text-blue-600" aria-hidden="true" />
         <h1 className="text-lg font-bold text-gray-900 tracking-tight">
-          서울부동산
+          심바네 똘똘한 한채
         </h1>
       </div>
       <span className="text-xs text-gray-400">MVP v0.1</span>

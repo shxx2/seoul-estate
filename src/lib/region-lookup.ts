@@ -55,6 +55,54 @@ export function cortarNoToBounds(cortarNo: string): BoundsParams | null {
 }
 
 /**
+ * cortarNo로 중심 좌표와 줌 레벨 반환 (지도 이동용)
+ */
+export function getRegionCenter(cortarNo: string): { lat: number; lng: number; zoom: number } | null {
+  const bounds = cortarNoToBounds(cortarNo);
+  if (!bounds) return null;
+
+  return {
+    lat: bounds.lat,
+    lng: bounds.lon,
+    zoom: bounds.z === 15 ? 16 : 14, // 동: 16, 구: 14 (네이버 줌 레벨)
+  };
+}
+
+/**
+ * cortarNo로 폴리곤 좌표 반환 (bounds를 사각형 폴리곤으로 변환) - 폴백용 동기 함수
+ */
+export function getRegionPolygon(cortarNo: string): { lat: number; lng: number }[] | null {
+  const bounds = cortarNoToBounds(cortarNo);
+  if (!bounds) return null;
+
+  // bounds를 사각형 폴리곤으로 변환 (시계방향)
+  return [
+    { lat: bounds.top, lng: bounds.lft },  // 좌상단
+    { lat: bounds.top, lng: bounds.rgt },  // 우상단
+    { lat: bounds.btm, lng: bounds.rgt },  // 우하단
+    { lat: bounds.btm, lng: bounds.lft },  // 좌하단
+  ];
+}
+
+/**
+ * cortarNo로 폴리곤 좌표 반환 (GeoJSON 데이터 우선, 없으면 bounds 기반 사각형 폴백)
+ */
+export async function getRegionPolygonAsync(cortarNo: string): Promise<{ lat: number; lng: number }[][] | null> {
+  const { getPolygonByCortarNo } = await import('./geojson-loader');
+
+  try {
+    const geoPolygon = await getPolygonByCortarNo(cortarNo);
+    if (geoPolygon) return geoPolygon;
+  } catch {
+    // GeoJSON 로드 실패 시 폴백으로 진행
+  }
+
+  // 폴백: bounds 기반 사각형 폴리곤
+  const fallback = getRegionPolygon(cortarNo);
+  return fallback ? [fallback] : null;
+}
+
+/**
  * 검색어로 구/동 찾기 (자동완성용).
  * 구 이름 먼저, 동 이름 후순위로 결과를 채운다.
  */

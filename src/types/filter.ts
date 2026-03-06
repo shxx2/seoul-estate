@@ -53,5 +53,5 @@ export const DEFAULT_FILTER: FilterState = {
   sortBy: "recent",
   page: 1,
   pageSize: 20,
-  searchTrigger: 0,
+  searchTrigger: 1,
 };

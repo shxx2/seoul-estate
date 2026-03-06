@@ -24,7 +24,8 @@ export interface NaverArticleItem {
   bildNm: string;        // 건물명
   cpNm: string;          // 중개업소명
   rltrNm: string;        // 중개사명
-  imgSrc: string;        // 이미지 URL
+  repImgUrl: string;     // 대표 이미지 경로 (상대 경로)
+  repImgThumb: string;   // 썸네일 크기 타입 (e.g. "f130_98")
 
   // 선택적 필드 (상세 API 또는 일부 응답에서만 존재)
   address?: string;          // 지번 주소

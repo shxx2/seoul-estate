@@ -80,8 +80,10 @@ export function transformNaverArticle(raw: NaverArticleItem): Article {
     agentName,
     articleUrl: `https://m.land.naver.com/article/${raw.atclNo}`,
 
-    // 이미지
-    thumbnailUrl: raw.imgSrc || null,
+    // 이미지 (네이버 CDN 전체 URL 생성)
+    thumbnailUrl: raw.repImgUrl
+      ? `https://landthumb-phinf.pstatic.net${raw.repImgUrl}?type=${raw.repImgThumb || "f130_98"}`
+      : null,
 
     // 상세 정보 가용 여부 (기본 false, 상세 API 호출 후 업데이트)
     hasDetailInfo: false,

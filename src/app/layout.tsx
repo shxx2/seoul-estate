@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import "./globals.css";
+import { NaverMapProvider } from "@/components/map/NaverMapProvider";
 
 export const metadata: Metadata = {
-  title: "서울부동산 - 서울 지역 매물 검색",
+  title: "심바네 똘똘한 한채 - 서울 지역 매물 검색",
   description: "서울 지역 아파트, 빌라, 오피스텔 매물을 지도에서 쉽게 검색하세요.",
   keywords: ["서울", "부동산", "매물", "아파트", "빌라", "오피스텔", "전세", "월세", "매매"],
   openGraph: {
-    title: "서울부동산 - 서울 지역 매물 검색",
+    title: "심바네 똘똘한 한채 - 서울 지역 매물 검색",
     description: "서울 지역 아파트, 빌라, 오피스텔 매물을 지도에서 쉽게 검색하세요.",
     type: "website",
     locale: "ko_KR",
@@ -22,12 +22,9 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className="antialiased bg-gray-50 text-gray-900">
-        {/* 카카오맵 SDK - body 내부에 배치 */}
-        <Script
-          src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_APP_KEY}&libraries=clusterer&autoload=false`}
-          strategy="beforeInteractive"
-        />
-        {children}
+        <NaverMapProvider>
+          {children}
+        </NaverMapProvider>
       </body>
     </html>
   );

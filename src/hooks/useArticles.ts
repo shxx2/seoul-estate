@@ -1,8 +1,17 @@
+import { useEffect } from "react";
 import useSWR from "swr";
 import type { Article } from "@/types/article";
 import type { ArticleFilters } from "@/types/filter";
+import {
+  buildArticlePrefetchRequestKeys,
+  buildArticlesRequestKey,
+  clearExpiredArticlePageCache,
+  getCachedArticlePage,
+  setCachedArticlePage,
+  shouldPrefetchArticleQuery,
+} from "./articles-page-cache";
 
-interface ArticlesResponse {
+export interface ArticlesResponse {
   success: boolean;
   data: {
     articles: Article[];
@@ -11,51 +20,6 @@ interface ArticlesResponse {
     pageSize: number;
     hasMore: boolean;
   };
-}
-
-function buildQueryString(filters: ArticleFilters): string {
-  const params = new URLSearchParams();
-
-  if (filters.guCode) params.set("guCode", filters.guCode);
-  if (filters.dongCode) params.set("dongCode", filters.dongCode);
-
-  filters.tradeTypes.forEach((t) => params.append("tradeTypes", t));
-  filters.buildingTypes.forEach((b) => params.append("buildingTypes", b));
-
-  params.set("primaryTradeType", filters.primaryTradeType);
-  params.set("sortBy", filters.sortBy);
-  params.set("page", String(filters.page));
-  params.set("pageSize", String(filters.pageSize));
-
-  if (filters.dealPriceRange) {
-    params.set("dealPriceMin", String(filters.dealPriceRange[0]));
-    params.set("dealPriceMax", String(filters.dealPriceRange[1]));
-  }
-  if (filters.depositRange) {
-    params.set("depositMin", String(filters.depositRange[0]));
-    params.set("depositMax", String(filters.depositRange[1]));
-  }
-  if (filters.monthlyRentRange) {
-    params.set("monthlyRentMin", String(filters.monthlyRentRange[0]));
-    params.set("monthlyRentMax", String(filters.monthlyRentRange[1]));
-  }
-  if (filters.areaRange) {
-    params.set("areaMin", String(filters.areaRange[0]));
-    params.set("areaMax", String(filters.areaRange[1]));
-  }
-
-  return params.toString();
-}
-
-export function buildArticlesRequestKey(
-  appliedFilters: ArticleFilters | null,
-  refreshTrigger: number
-): string | null {
-  if (!appliedFilters) {
-    return null;
-  }
-
-  return `/api/articles?${buildQueryString(appliedFilters)}&_refresh=${refreshTrigger}`;
 }
 
 export class ApiError extends Error {
@@ -68,6 +32,13 @@ export class ApiError extends Error {
 }
 
 const fetcher = async (url: string): Promise<ArticlesResponse> => {
+  clearExpiredArticlePageCache();
+
+  const cached = getCachedArticlePage<ArticlesResponse>(url);
+  if (cached) {
+    return cached;
+  }
+
   const res = await fetch(url);
   if (!res.ok) {
     const errorBody = await res.json().catch(() => ({}));
@@ -75,7 +46,9 @@ const fetcher = async (url: string): Promise<ArticlesResponse> => {
     const message = (errorBody as { error?: { message?: string } })?.error?.message || `HTTP ${res.status}`;
     throw new ApiError(code, message);
   }
-  return res.json() as Promise<ArticlesResponse>;
+  const data = await res.json() as ArticlesResponse;
+  setCachedArticlePage(url, data);
+  return data;
 };
 
 /**
@@ -92,6 +65,33 @@ export function useArticles(appliedFilters: ArticleFilters | null, refreshTrigge
     revalidateOnFocus: false,
     dedupingInterval: 2000, // 2초 - 연속 클릭 방지 수준으로 축소
   });
+
+  useEffect(() => {
+    if (!data || !appliedFilters || appliedFilters.page !== 1) {
+      return;
+    }
+
+    if (!shouldPrefetchArticleQuery(appliedFilters, refreshTrigger)) {
+      return;
+    }
+
+    const keys = buildArticlePrefetchRequestKeys(
+      appliedFilters,
+      refreshTrigger,
+      data.data.total,
+      data.data.pageSize
+    );
+
+    for (const prefetchKey of keys) {
+      if (getCachedArticlePage<ArticlesResponse>(prefetchKey)) {
+        continue;
+      }
+
+      void fetcher(prefetchKey).catch(() => {
+        // Background prefetch failure should not affect the visible page.
+      });
+    }
+  }, [appliedFilters, data, refreshTrigger]);
 
   return {
     articles: data?.data.articles ?? [],

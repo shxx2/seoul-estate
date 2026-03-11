@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getPolygonByCortarNo } from '@/lib/geojson-loader';
-import { getRegionPolygon as getFallbackPolygon } from '@/lib/region-lookup';
+import { resolveRegionPolygon } from './region-polygon';
 
 export function useRegionPolygon(cortarNo: string | null) {
   const [polygon, setPolygon] = useState<{ lat: number; lng: number }[][] | null>(null);
@@ -13,15 +12,9 @@ export function useRegionPolygon(cortarNo: string | null) {
     }
 
     setIsLoading(true);
-    getPolygonByCortarNo(cortarNo)
+    resolveRegionPolygon(cortarNo)
       .then((data) => {
-        if (data) {
-          setPolygon(data);
-        } else {
-          // 폴백: 사각형 폴리곤
-          const fallback = getFallbackPolygon(cortarNo);
-          setPolygon(fallback ? [fallback] : null);
-        }
+        setPolygon(data);
       })
       .finally(() => setIsLoading(false));
   }, [cortarNo]);

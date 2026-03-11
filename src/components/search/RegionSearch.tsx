@@ -21,16 +21,12 @@ import { Search, X, MapPin } from "lucide-react";
 import { searchRegions } from "@/lib/region-lookup";
 import { useFilterStore } from "@/store/filterStore";
 import type { Region } from "@/types/region";
-import seoulDistricts from "../../../public/data/seoul-districts.json";
-
-// ─────────────────────────────────────────────
-// 유틸
-// ─────────────────────────────────────────────
-
-/** cortarNo가 구 단위인지 판별 (districts 목록 직접 조회) */
-function isDistrictCode(cortarNo: string): boolean {
-  return seoulDistricts.districts.some((d) => d.cortarNo === cortarNo);
-}
+import {
+  isDistrictCode,
+  resolveRegionSearchSubmission,
+  shouldClearRegionSelection,
+  type RegionSearchSubmission,
+} from "./region-search-submit";
 
 // ─────────────────────────────────────────────
 // Props 타입
@@ -53,6 +49,8 @@ export default function RegionSearch({
 }: RegionSearchProps) {
   const setFilter = useFilterStore((s) => s.setFilter);
   const submitSearch = useFilterStore((s) => s.submitSearch);
+  const guCode = useFilterStore((s) => s.guCode);
+  const dongCode = useFilterStore((s) => s.dongCode);
 
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Region[]>([]);
@@ -66,14 +64,32 @@ export default function RegionSearch({
 
   const listboxId = useId();
 
+  const commitRegionSelection = useCallback(
+    (selection: RegionSearchSubmission) => {
+      setSelectedLabel(selection.label);
+      setQuery(selection.label);
+      setResults([]);
+      setIsOpen(false);
+      setActiveIndex(-1);
+      setFilter("guCode", selection.guCode);
+      setFilter("dongCode", selection.dongCode);
+    },
+    [setFilter]
+  );
+
   // ─── 검색어 변경 핸들러 ───────────────────
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
       setQuery(value);
-      setSelectedLabel(null);
       setActiveIndex(-1);
+
+      if (shouldClearRegionSelection(value, selectedLabel)) {
+        setSelectedLabel(null);
+        setFilter("guCode", null);
+        setFilter("dongCode", null);
+      }
 
       if (value.trim().length === 0) {
         setResults([]);
@@ -85,38 +101,48 @@ export default function RegionSearch({
       setResults(found);
       setIsOpen(found.length > 0);
     },
-    []
+    [selectedLabel, setFilter]
   );
 
   // ─── 항목 선택 ────────────────────────────
 
   const handleSelect = useCallback(
     (region: Region) => {
-      setSelectedLabel(region.name);
-      setQuery(region.name);
-      setResults([]);
-      setIsOpen(false);
-      setActiveIndex(-1);
-
-      if (isDistrictCode(region.cortarNo)) {
-        setFilter("guCode", region.cortarNo);
-        setFilter("dongCode", null);
-      } else {
-        setFilter("dongCode", region.cortarNo);
+      const selection = resolveRegionSearchSubmission({
+        query: region.name,
+        visibleResults: [region],
+        selectedLabel,
+        currentGuCode: guCode,
+        currentDongCode: dongCode,
+      });
+      if (!selection) {
+        return;
       }
 
+      commitRegionSelection(selection);
       submitSearch();
-
       inputRef.current?.blur();
     },
-    [setFilter, submitSearch]
+    [commitRegionSelection, submitSearch, selectedLabel, guCode, dongCode]
   );
 
   // ─── 검색 실행 ────────────────────────────
 
   const handleSearch = useCallback(() => {
+    const selection = resolveRegionSearchSubmission({
+      query,
+      visibleResults: results,
+      selectedLabel,
+      currentGuCode: guCode,
+      currentDongCode: dongCode,
+    });
+    if (selection) {
+      commitRegionSelection(selection);
+    }
+
     submitSearch();
-  }, [submitSearch]);
+    inputRef.current?.blur();
+  }, [commitRegionSelection, query, results, selectedLabel, guCode, dongCode, submitSearch]);
 
   // ─── 입력 초기화 ──────────────────────────
 

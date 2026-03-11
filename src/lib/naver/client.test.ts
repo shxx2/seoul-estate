@@ -92,7 +92,7 @@ test("uses a longer single-attempt upstream fetch profile on vercel", () => {
   const config = resolveNaverRequestRuntimeConfig({ VERCEL: "1" });
 
   assert.deepEqual(config, {
-    requestTimeoutMs: 15000,
+    requestTimeoutMs: 180000,
     maxRetries: 0,
     delayMinMs: 0,
     delayMaxMs: 0,

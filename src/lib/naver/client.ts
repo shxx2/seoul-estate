@@ -76,7 +76,7 @@ export function resolveNaverRequestRuntimeConfig(
 
   if (isVercel) {
     return {
-      requestTimeoutMs: 15000,
+      requestTimeoutMs: 180000,
       maxRetries: 0,
       delayMinMs: 0,
       delayMaxMs: 0,

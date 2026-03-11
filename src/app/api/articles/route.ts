@@ -19,7 +19,7 @@ import {
 import type { Article, TradeType, BuildingType } from '@/types/article';
 
 // Node.js Runtime 사용 - Vercel Seoul 리전(icn1)에서 실행
-export const maxDuration = 30;
+export const maxDuration = 180;
 
 // guCode를 구 이름으로 매핑 (서울 25개 구 전체)
 const guCodeToName: Record<string, string> = {

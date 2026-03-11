@@ -89,12 +89,12 @@ test("uses the local upstream fetch profile outside vercel", () => {
   });
 });
 
-test("uses a longer single-attempt upstream fetch profile on vercel", () => {
+test("uses a shorter multi-retry upstream fetch profile on vercel", () => {
   const config = resolveNaverRequestRuntimeConfig({ VERCEL: "1" });
 
   assert.deepEqual(config, {
-    requestTimeoutMs: 30000,
-    maxRetries: 1,
+    requestTimeoutMs: 10000,
+    maxRetries: 3,
     delayMinMs: 0,
     delayMaxMs: 0,
     maxConcurrentRequests: 4,

@@ -126,17 +126,17 @@ export function shouldPrefetchArticleQuery(
 }
 
 export function clearExpiredArticlePageCache(now = Date.now()): void {
-  for (const [key, entry] of articlePageCache.entries()) {
+  articlePageCache.forEach((entry, key) => {
     if (entry.expiresAt <= now) {
       articlePageCache.delete(key);
     }
-  }
+  });
 
-  for (const [key, expiresAt] of prefetchedQueryCache.entries()) {
+  prefetchedQueryCache.forEach((expiresAt, key) => {
     if (expiresAt <= now) {
       prefetchedQueryCache.delete(key);
     }
-  }
+  });
 }
 
 export function resetArticlePageCache(): void {

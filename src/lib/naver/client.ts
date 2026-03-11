@@ -5,6 +5,7 @@ import type { NaverArticleListResponse } from "./types";
 import type { BuildingType, TradeType } from "@/types/article";
 import { naverCache } from "./cache";
 import type { NaverFetchDiagnostics } from "./diagnostics";
+import { requestUpstreamText } from "./upstream-request";
 
 /** User-Agent 풀 (20개 이상의 다양한 브라우저) */
 const USER_AGENT_POOL = [
@@ -96,7 +97,7 @@ export function resolveNaverRequestRuntimeConfig(
 }
 
 /** 동적 헤더 생성 (요청마다 User-Agent 로테이션) */
-function getHeaders(): HeadersInit {
+function getHeaders(): Record<string, string> {
   return {
     "User-Agent": getRandomUserAgent(),
     "Referer": "https://m.land.naver.com/",
@@ -132,36 +133,6 @@ function getRequestLimiter(maxConcurrentRequests: number) {
 async function withConcurrencyLimit<T>(fn: () => Promise<T>): Promise<T> {
   const { maxConcurrentRequests } = resolveNaverRequestRuntimeConfig();
   return getRequestLimiter(maxConcurrentRequests)(fn);
-}
-
-/** 타임아웃이 있는 fetch (Edge Runtime 호환) */
-async function fetchWithTimeout(
-  url: string,
-  options: RequestInit,
-  timeoutMs = 8000 // Edge 함수 타임아웃(30초) 내에 응답받도록 8초로 설정
-): Promise<Response> {
-  const controller = new AbortController();
-  let didTimeout = false;
-
-  const timeoutId = setTimeout(() => {
-    didTimeout = true;
-    controller.abort();
-  }, timeoutMs);
-
-  try {
-    const res = await fetch(url, {
-      ...options,
-      signal: controller.signal,
-    });
-    return res;
-  } catch (error) {
-    if (didTimeout) {
-      throw new Error(`Request timeout after ${timeoutMs}ms`);
-    }
-    throw error;
-  } finally {
-    clearTimeout(timeoutId);
-  }
 }
 
 export interface ArticleListParams {
@@ -334,17 +305,15 @@ export async function fetchArticleList(
       try {
         await randomDelay(runtimeConfig.delayMinMs, runtimeConfig.delayMaxMs);
 
-        const res = await fetchWithTimeout(requestUrl, {
+        const response = await requestUpstreamText(requestUrl, {
           headers: getHeaders(),
-          cache: "no-store",
-          redirect: "manual",
-        }, runtimeConfig.requestTimeoutMs);
+          timeoutMs: runtimeConfig.requestTimeoutMs,
+        });
 
-        upstreamStatusCodes.push(res.status);
-        console.log('[NaverAPI] fetchArticleList response status:', res.status, res.statusText);
+        upstreamStatusCodes.push(response.status);
+        console.log('[NaverAPI] fetchArticleList response status:', response.status, response.statusText);
 
-        const text = await res.text();
-        const json = parseNaverArticleListResponse(res.status, text);
+        const json = parseNaverArticleListResponse(response.status, response.text);
 
         const bodyCount = json.body?.length ?? 0;
         console.log('[NaverAPI] fetchArticleList parsed article count:', bodyCount);
@@ -427,18 +396,18 @@ export async function fetchArticleDetail(
 
     await randomDelay(runtimeConfig.delayMinMs, runtimeConfig.delayMaxMs);
 
-    const res = await fetchWithTimeout(url.toString(), {
+    const response = await requestUpstreamText(url.toString(), {
       headers: getHeaders(),
-      cache: "no-store",
-    }, runtimeConfig.requestTimeoutMs);
+      timeoutMs: runtimeConfig.requestTimeoutMs,
+    });
 
-    if (!res.ok) {
+    if (response.status >= 400) {
       throw new Error(
-        `fetchArticleDetail failed: ${res.status} ${res.statusText}`
+        `fetchArticleDetail failed: ${response.status} ${response.statusText}`
       );
     }
 
-    const json = await res.json() as NaverArticleDetailResponse;
+    const json = JSON.parse(response.text) as NaverArticleDetailResponse;
     return json;
   });
 }

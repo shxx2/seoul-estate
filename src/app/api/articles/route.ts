@@ -1,8 +1,12 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { cortarNoToBounds } from '@/lib/region-lookup';
 import { getCached, setCache } from '@/lib/cache/server-cache';
-import { fetchArticleList, resolveNaverRequestRuntimeConfig } from '@/lib/naver/client';
+import {
+  fetchArticleList,
+  NaverUpstreamError,
+  resolveNaverRequestRuntimeConfig,
+} from '@/lib/naver/client';
 import { transformNaverArticle } from '@/lib/naver/transform';
 import type { NaverArticleItem } from '@/lib/naver/types';
 import { apiSuccess, apiError } from '@/lib/api-response';
@@ -346,6 +350,32 @@ export async function GET(req: NextRequest) {
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     console.error('[Articles] Naver API error for cortarNo:', cortarNo, '-', message);
+
+    if (debugRequested) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'NAVER_API_ERROR',
+            message: '매물 정보를 가져오는 데 실패했습니다. 잠시 후 다시 시도해주세요.',
+          },
+          debug: {
+            upstreamError: err instanceof NaverUpstreamError
+              ? {
+                  code: err.code,
+                  status: err.status ?? null,
+                  message: err.message,
+                }
+              : {
+                  code: 'UNKNOWN_ERROR',
+                  status: null,
+                  message,
+                },
+          },
+        },
+        { status: 503 }
+      );
+    }
 
     return apiError(
       'NAVER_API_ERROR',

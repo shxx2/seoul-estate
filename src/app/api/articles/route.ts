@@ -17,6 +17,7 @@ import {
   createArticleFetchPlan,
   resolveArticleFetchBatchSize,
 } from '@/lib/naver/query-planner';
+import { fetchPageBatchWithRecovery } from '@/lib/naver/page-batch-recovery';
 import { normalizeArticleResults } from '@/lib/naver/normalize-articles';
 import {
   buildArticleCacheKey,
@@ -240,8 +241,9 @@ export async function GET(req: NextRequest) {
     const diagnostics = [];
 
     for (const pageBatch of pageBatches) {
-      const batchResults = await Promise.all(
-        pageBatch.map((page) =>
+      const batchResult = await fetchPageBatchWithRecovery({
+        pages: pageBatch,
+        fetchPage: (page) =>
           fetchArticleList({
             rletTpCd: buildingTypeCodes,
             tradTpCd: tradeTypeCodes,
@@ -263,12 +265,18 @@ export async function GET(req: NextRequest) {
             wprcMax: params.monthlyRentMax,
           }, {
             forceRefresh,
-          })
-        )
-      );
+          }),
+      });
+
+      if (batchResult.recoveredPages.length > 0) {
+        console.warn('[Articles] recovered pages after batch failure:', JSON.stringify({
+          cortarNo,
+          recoveredPages: batchResult.recoveredPages,
+        }));
+      }
 
       let reachedEndOfUpstream = false;
-      for (const result of batchResults) {
+      for (const { value: result } of batchResult.results) {
         diagnostics.push(result.diagnostics);
         allNaverArticles.push(...(result.response.body ?? []));
 

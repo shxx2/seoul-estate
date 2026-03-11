@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import {
   NaverUpstreamError,
   parseNaverArticleListResponse,
+  resolveNaverRequestRuntimeConfig,
   shouldRetryNaverError,
 } from "./client";
 
@@ -74,4 +75,26 @@ test("retries redirect and invalid-json upstream failures", () => {
     shouldRetryNaverError(new NaverUpstreamError("HTTP_ERROR", "bad request", 400)),
     false
   );
+});
+
+test("uses the local upstream fetch profile outside vercel", () => {
+  const config = resolveNaverRequestRuntimeConfig({});
+
+  assert.deepEqual(config, {
+    requestTimeoutMs: 8000,
+    maxRetries: 2,
+    delayMinMs: 300,
+    delayMaxMs: 800,
+  });
+});
+
+test("uses a longer single-attempt upstream fetch profile on vercel", () => {
+  const config = resolveNaverRequestRuntimeConfig({ VERCEL: "1" });
+
+  assert.deepEqual(config, {
+    requestTimeoutMs: 15000,
+    maxRetries: 0,
+    delayMinMs: 0,
+    delayMaxMs: 0,
+  });
 });

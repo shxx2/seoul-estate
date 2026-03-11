@@ -62,6 +62,35 @@ function getRandomUserAgent(): string {
   return USER_AGENT_POOL[Math.floor(Math.random() * USER_AGENT_POOL.length)];
 }
 
+export interface NaverRequestRuntimeConfig {
+  requestTimeoutMs: number;
+  maxRetries: number;
+  delayMinMs: number;
+  delayMaxMs: number;
+}
+
+export function resolveNaverRequestRuntimeConfig(
+  env: NodeJS.ProcessEnv | Record<string, string | undefined> = process.env
+): NaverRequestRuntimeConfig {
+  const isVercel = env.VERCEL === "1" || env.VERCEL === "true";
+
+  if (isVercel) {
+    return {
+      requestTimeoutMs: 15000,
+      maxRetries: 0,
+      delayMinMs: 0,
+      delayMaxMs: 0,
+    };
+  }
+
+  return {
+    requestTimeoutMs: 8000,
+    maxRetries: 2,
+    delayMinMs: 300,
+    delayMaxMs: 800,
+  };
+}
+
 /** 동적 헤더 생성 (요청마다 User-Agent 로테이션) */
 function getHeaders(): HeadersInit {
   return {
@@ -74,6 +103,9 @@ function getHeaders(): HeadersInit {
 
 /** 랜덤 딜레이 (봇 탐지 회피) */
 async function randomDelay(minMs = 300, maxMs = 800): Promise<void> {
+  if (maxMs <= 0) {
+    return;
+  }
   const delay = Math.floor(Math.random() * (maxMs - minMs + 1)) + minMs;
   await new Promise((resolve) => setTimeout(resolve, delay));
 }
@@ -266,6 +298,7 @@ export async function fetchArticleList(
   options: FetchArticleListOptions = {}
 ): Promise<FetchArticleListResult> {
   return withConcurrencyLimit(async () => {
+    const runtimeConfig = resolveNaverRequestRuntimeConfig();
     const cacheKey = naverCache.generateKey(params);
     const requestUrl = buildArticleListRequestUrl(params);
 
@@ -290,19 +323,19 @@ export async function fetchArticleList(
 
     console.log('[NaverAPI] Cache miss, fetching:', requestUrl);
 
-    const maxRetries = options.maxRetries ?? 2;
+    const maxRetries = options.maxRetries ?? runtimeConfig.maxRetries;
     const upstreamStatusCodes: number[] = [];
     let retryCount = 0;
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
-        await randomDelay();
+        await randomDelay(runtimeConfig.delayMinMs, runtimeConfig.delayMaxMs);
 
         const res = await fetchWithTimeout(requestUrl, {
           headers: getHeaders(),
           cache: "no-store",
           redirect: "manual",
-        });
+        }, runtimeConfig.requestTimeoutMs);
 
         upstreamStatusCodes.push(res.status);
         console.log('[NaverAPI] fetchArticleList response status:', res.status, res.statusText);
@@ -383,17 +416,18 @@ export async function fetchArticleDetail(
   tradeType: TradeType
 ): Promise<NaverArticleDetailResponse> {
   return withConcurrencyLimit(async () => {
+    const runtimeConfig = resolveNaverRequestRuntimeConfig();
     const url = new URL(NAVER_ARTICLE_DETAIL_URL);
     url.searchParams.set("articleId", id);
     url.searchParams.set("realEstateType", BUILDING_TYPE_TO_NAVER[buildingType]);
     url.searchParams.set("tradeType", TRADE_TYPE_TO_NAVER[tradeType]);
 
-    await randomDelay();
+    await randomDelay(runtimeConfig.delayMinMs, runtimeConfig.delayMaxMs);
 
     const res = await fetchWithTimeout(url.toString(), {
       headers: getHeaders(),
       cache: "no-store",
-    });
+    }, runtimeConfig.requestTimeoutMs);
 
     if (!res.ok) {
       throw new Error(

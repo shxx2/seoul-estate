@@ -1,3 +1,4 @@
+import pLimit from "p-limit";
 import { NAVER_ARTICLE_LIST_URL, NAVER_ARTICLE_DETAIL_URL } from "./endpoints";
 import { BUILDING_TYPE_TO_NAVER, TRADE_TYPE_TO_NAVER } from "@/lib/constants";
 import type { NaverArticleListResponse } from "./types";
@@ -67,6 +68,7 @@ export interface NaverRequestRuntimeConfig {
   maxRetries: number;
   delayMinMs: number;
   delayMaxMs: number;
+  maxConcurrentRequests: number;
 }
 
 export function resolveNaverRequestRuntimeConfig(
@@ -80,6 +82,7 @@ export function resolveNaverRequestRuntimeConfig(
       maxRetries: 0,
       delayMinMs: 0,
       delayMaxMs: 0,
+      maxConcurrentRequests: 2,
     };
   }
 
@@ -88,6 +91,7 @@ export function resolveNaverRequestRuntimeConfig(
     maxRetries: 2,
     delayMinMs: 300,
     delayMaxMs: 800,
+    maxConcurrentRequests: 1,
   };
 }
 
@@ -110,25 +114,24 @@ async function randomDelay(minMs = 300, maxMs = 800): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, delay));
 }
 
-/** 간단한 동시성 제어 (최대 1개 동시 요청) */
-let pendingRequest: Promise<unknown> | null = null;
+const requestLimiters = new Map<number, ReturnType<typeof pLimit>>();
+
+function getRequestLimiter(maxConcurrentRequests: number) {
+  const safeConcurrency = Math.max(1, Math.floor(maxConcurrentRequests));
+  const existing = requestLimiters.get(safeConcurrency);
+
+  if (existing) {
+    return existing;
+  }
+
+  const limiter = pLimit(safeConcurrency);
+  requestLimiters.set(safeConcurrency, limiter);
+  return limiter;
+}
 
 async function withConcurrencyLimit<T>(fn: () => Promise<T>): Promise<T> {
-  // 이전 요청 완료 대기
-  if (pendingRequest) {
-    await pendingRequest.catch(() => {}); // 이전 요청 에러 무시
-  }
-
-  const promise = fn();
-  pendingRequest = promise;
-
-  try {
-    return await promise;
-  } finally {
-    if (pendingRequest === promise) {
-      pendingRequest = null;
-    }
-  }
+  const { maxConcurrentRequests } = resolveNaverRequestRuntimeConfig();
+  return getRequestLimiter(maxConcurrentRequests)(fn);
 }
 
 /** 타임아웃이 있는 fetch (Edge Runtime 호환) */

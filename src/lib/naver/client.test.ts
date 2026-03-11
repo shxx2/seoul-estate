@@ -85,6 +85,7 @@ test("uses the local upstream fetch profile outside vercel", () => {
     maxRetries: 2,
     delayMinMs: 300,
     delayMaxMs: 800,
+    maxConcurrentRequests: 1,
   });
 });
 
@@ -96,5 +97,6 @@ test("uses a longer single-attempt upstream fetch profile on vercel", () => {
     maxRetries: 0,
     delayMinMs: 0,
     delayMaxMs: 0,
+    maxConcurrentRequests: 2,
   });
 });

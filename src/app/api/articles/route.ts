@@ -2,13 +2,17 @@ import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { cortarNoToBounds } from '@/lib/region-lookup';
 import { getCached, setCache } from '@/lib/cache/server-cache';
-import { fetchArticleList } from '@/lib/naver/client';
+import { fetchArticleList, resolveNaverRequestRuntimeConfig } from '@/lib/naver/client';
 import { transformNaverArticle } from '@/lib/naver/transform';
 import type { NaverArticleItem } from '@/lib/naver/types';
 import { apiSuccess, apiError } from '@/lib/api-response';
 import { TRADE_TYPE_TO_NAVER, BUILDING_TYPE_TO_NAVER } from '@/lib/constants';
 import { mergeNaverFetchDiagnostics } from '@/lib/naver/diagnostics';
-import { createArticleFetchPlan } from '@/lib/naver/query-planner';
+import {
+  buildArticleFetchPageBatches,
+  createArticleFetchPlan,
+  resolveArticleFetchBatchSize,
+} from '@/lib/naver/query-planner';
 import { normalizeArticleResults } from '@/lib/naver/normalize-articles';
 import {
   buildArticleCacheKey,
@@ -216,38 +220,55 @@ export async function GET(req: NextRequest) {
       areaMin: params.areaMin,
       areaMax: params.areaMax,
     });
+    const runtimeConfig = resolveNaverRequestRuntimeConfig();
+    const pageBatches = buildArticleFetchPageBatches(
+      fetchPlan.maxPages,
+      resolveArticleFetchBatchSize(fetchPlan, runtimeConfig.maxConcurrentRequests)
+    );
     const allNaverArticles: NaverArticleItem[] = [];
     const diagnostics = [];
 
-    for (let page = 1; page <= fetchPlan.maxPages; page++) {
-      const result = await fetchArticleList({
-        rletTpCd: buildingTypeCodes,
-        tradTpCd: tradeTypeCodes,
-        z: bounds.z,
-        lat: bounds.lat,
-        lon: bounds.lon,
-        btm: bounds.btm,
-        lft: bounds.lft,
-        top: bounds.top,
-        rgt: bounds.rgt,
-        page,
-        spcMin: params.areaMin,
-        spcMax: params.areaMax,
-        prcMin: params.dealPriceMin,
-        prcMax: params.dealPriceMax,
-        dprcMin: params.depositMin,
-        dprcMax: params.depositMax,
-        wprcMin: params.monthlyRentMin,
-        wprcMax: params.monthlyRentMax,
-      }, {
-        forceRefresh,
-      });
+    for (const pageBatch of pageBatches) {
+      const batchResults = await Promise.all(
+        pageBatch.map((page) =>
+          fetchArticleList({
+            rletTpCd: buildingTypeCodes,
+            tradTpCd: tradeTypeCodes,
+            z: bounds.z,
+            lat: bounds.lat,
+            lon: bounds.lon,
+            btm: bounds.btm,
+            lft: bounds.lft,
+            top: bounds.top,
+            rgt: bounds.rgt,
+            page,
+            spcMin: params.areaMin,
+            spcMax: params.areaMax,
+            prcMin: params.dealPriceMin,
+            prcMax: params.dealPriceMax,
+            dprcMin: params.depositMin,
+            dprcMax: params.depositMax,
+            wprcMin: params.monthlyRentMin,
+            wprcMax: params.monthlyRentMax,
+          }, {
+            forceRefresh,
+          })
+        )
+      );
 
-      diagnostics.push(result.diagnostics);
-      allNaverArticles.push(...(result.response.body ?? []));
+      let reachedEndOfUpstream = false;
+      for (const result of batchResults) {
+        diagnostics.push(result.diagnostics);
+        allNaverArticles.push(...(result.response.body ?? []));
 
-      // 더 이상 데이터가 없으면 중단
-      if (!result.response.isMoreData && !result.response.more) {
+        // 더 이상 데이터가 없으면 다음 배치부터는 중단한다.
+        if (!result.response.isMoreData && !result.response.more) {
+          reachedEndOfUpstream = true;
+          break;
+        }
+      }
+
+      if (reachedEndOfUpstream) {
         break;
       }
     }

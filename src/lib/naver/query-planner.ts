@@ -37,3 +37,37 @@ export function createArticleFetchPlan(params: ArticleFetchPlanParams): ArticleF
     stopWhenEnoughFiltered: !requiresPostFilter,
   };
 }
+
+export function resolveArticleFetchBatchSize(
+  plan: ArticleFetchPlan,
+  maxConcurrentRequests: number
+): number {
+  if (!plan.requiresPostFilter) {
+    return 1;
+  }
+
+  return Math.max(1, Math.floor(maxConcurrentRequests));
+}
+
+export function buildArticleFetchPageBatches(
+  maxPages: number,
+  batchSize: number
+): number[][] {
+  const safeBatchSize = Math.max(1, Math.floor(batchSize));
+  const batches: number[][] = [];
+
+  for (let page = 1; page <= maxPages; page += safeBatchSize) {
+    const batch: number[] = [];
+
+    for (let offset = 0; offset < safeBatchSize; offset += 1) {
+      const nextPage = page + offset;
+      if (nextPage <= maxPages) {
+        batch.push(nextPage);
+      }
+    }
+
+    batches.push(batch);
+  }
+
+  return batches;
+}

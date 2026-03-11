@@ -15,12 +15,12 @@ import ArticleMarker from "@/components/map/ArticleMarker";
 import TransitRouteOverlay from "@/components/map/TransitRouteOverlay";
 import ArticleDetail from "@/components/article/ArticleDetail";
 import type { Article } from "@/types/article";
-import type { FilterState } from "@/types/filter";
+import type { ArticleFilters } from "@/types/filter";
 
 export default function Home() {
   // 필터 스토어 - useShallow로 얕은 비교 수행
   const filters = useFilterStore(
-    useShallow((s): FilterState => ({
+    useShallow((s) => ({
       guCode: s.guCode,
       dongCode: s.dongCode,
       tradeTypes: s.tradeTypes,
@@ -33,11 +33,11 @@ export default function Home() {
       sortBy: s.sortBy,
       page: s.page,
       pageSize: s.pageSize,
-      searchTrigger: s.searchTrigger,
+      appliedFilters: s.appliedFilters,
+      refreshTrigger: s.refreshTrigger,
     }))
   );
-  const setFilter = useFilterStore((s) => s.setFilter);
-  const triggerSearch = useFilterStore((s) => s.triggerSearch);
+  const setPage = useFilterStore((s) => s.setPage);
 
   // 매물 조회
   const {
@@ -48,7 +48,7 @@ export default function Home() {
     isLoading,
     error,
     mutate,
-  } = useArticles(filters, { searchTrigger: filters.searchTrigger });
+  } = useArticles(filters.appliedFilters, filters.refreshTrigger);
 
   // 선택된 매물
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
@@ -66,10 +66,9 @@ export default function Home() {
   // 페이지 변경 (페이지 변경 시 검색 트리거)
   const handlePageChange = useCallback(
     (newPage: number) => {
-      setFilter("page", newPage);
-      triggerSearch();
+      setPage(newPage);
     },
-    [setFilter, triggerSearch]
+    [setPage]
   );
 
   // 재시도
@@ -80,6 +79,12 @@ export default function Home() {
   // totalPages 계산
   const totalPages = useMemo(() => Math.ceil(total / pageSize), [total, pageSize]);
 
+  const activeFilters: Pick<ArticleFilters, "guCode" | "dongCode"> =
+    filters.appliedFilters ?? {
+      guCode: null,
+      dongCode: null,
+    };
+
   // 선택된 지역의 중심 좌표 계산
   const mapCenter = useMemo(() => {
     // 매물 선택 시 해당 매물 위치로 이동
@@ -87,25 +92,25 @@ export default function Home() {
       return { lat: selectedArticle.lat, lng: selectedArticle.lng };
     }
 
-    const cortarNo = filters.dongCode || filters.guCode;
+    const cortarNo = activeFilters.dongCode || activeFilters.guCode;
     if (!cortarNo) return undefined;
     const center = getRegionCenter(cortarNo);
     return center ? { lat: center.lat, lng: center.lng } : undefined;
-  }, [selectedArticle, filters.dongCode, filters.guCode]);
+  }, [selectedArticle, activeFilters.dongCode, activeFilters.guCode]);
 
   // 선택된 지역의 줌 레벨 (네이버맵: 숫자 클수록 확대)
   const mapZoom = useMemo(() => {
     // 매물 선택 시 더 확대 (카카오 level 3 → 네이버 zoom 18)
     if (selectedArticle) return 18;
 
-    const cortarNo = filters.dongCode || filters.guCode;
+    const cortarNo = activeFilters.dongCode || activeFilters.guCode;
     if (!cortarNo) return 11; // 카카오 level 8 → 네이버 zoom 11
     const center = getRegionCenter(cortarNo);
     return center?.zoom ?? 11;
-  }, [selectedArticle, filters.dongCode, filters.guCode]);
+  }, [selectedArticle, activeFilters.dongCode, activeFilters.guCode]);
 
   // 선택된 지역의 폴리곤 경로
-  const cortarNo = filters.dongCode || filters.guCode;
+  const cortarNo = activeFilters.dongCode || activeFilters.guCode;
   const { polygon: regionPolygonPaths } = useRegionPolygon(cortarNo);
 
   return (

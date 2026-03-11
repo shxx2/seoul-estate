@@ -7,13 +7,13 @@
 - **프레임워크**: Next.js 14+ (App Router)
 - **언어**: TypeScript 5.x
 - **스타일링**: Tailwind CSS 3.x
-- **지도**: 카카오맵 API (react-kakao-maps-sdk)
+- **지도**: 네이버 지도 API (react-naver-maps)
 - **상태 관리**: Zustand (클라이언트), SWR (서버)
 - **데이터 소스**: 네이버부동산 내부 API (크롤링)
 - **배포**: Vercel
 
 ## 핵심 기능
-1. 카카오맵 기반 서울 구/동 선택
+1. 네이버 지도 기반 서울 구/동 선택
 2. 건물유형 필터 (아파트/빌라/오피스텔)
 3. 거래유형 필터 (매매/전세/월세)
 4. 가격/면적 범위 필터
@@ -25,7 +25,7 @@ src/
 ├── app/           # Next.js App Router 페이지 및 API Routes
 ├── components/    # React 컴포넌트 (map, filter, article, layout, common)
 ├── hooks/         # 커스텀 훅 (SWR 데이터 페칭)
-├── lib/           # 유틸리티 (naver 크롤링, kakao 로더, format)
+├── lib/           # 유틸리티 (naver 크롤링, region lookup, format)
 ├── store/         # Zustand 상태 스토어
 └── types/         # TypeScript 타입 정의
 ```
@@ -40,7 +40,7 @@ src/
 
 ### 컴포넌트
 - `"use client"` 지시어 필요한 컴포넌트에만 사용
-- 카카오맵 컴포넌트는 dynamic import + ssr: false
+- 네이버맵 Provider는 클라이언트에서만 활성화
 
 ### API Routes
 - zod로 파라미터 검증
@@ -55,7 +55,7 @@ pnpm lint         # ESLint 검사
 
 ## 환경 변수
 ```
-NEXT_PUBLIC_KAKAO_APP_KEY=  # 카카오맵 JavaScript 키
+NEXT_PUBLIC_NCP_CLIENT_ID=  # 네이버 지도 JavaScript 클라이언트 ID
 ```
 
 ## 참고 자료

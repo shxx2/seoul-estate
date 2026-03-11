@@ -5,6 +5,8 @@
 > 프로젝트: estate
 > 유형: 개인 프로젝트 (비상업적)
 
+> 참고: 현재 구현은 네이버 지도(`react-naver-maps`) 기준이며, 아래 일부 카카오맵 관련 서술은 초기 설계 흔적이다.
+
 ---
 
 ## 변경 이력
@@ -29,7 +31,7 @@ estate/
 │
 ├── src/
 │   ├── app/
-│   │   ├── layout.tsx                    # 루트 레이아웃 (카카오맵 Script 로딩)
+│   │   ├── layout.tsx                    # 루트 레이아웃 (네이버맵 Provider 연결)
 │   │   ├── page.tsx                      # 메인 페이지 (지도 + 매물 목록)
 │   │   ├── globals.css                   # 글로벌 스타일
 │   │   └── api/
@@ -47,9 +49,9 @@ estate/
 │   │   │   └── MobileBottomSheet.tsx     # [신규] 모바일 하단 시트
 │   │   │
 │   │   ├── map/
-│   │   │   ├── KakaoMap.tsx              # 카카오맵 래퍼 컴포넌트
-│   │   │   ├── DistrictMarker.tsx        # [변경] 구 단위 마커 (폴리곤→마커)
-│   │   │   ├── DongMarker.tsx            # [변경] 동 단위 마커 (폴리곤→마커)
+│   │   │   ├── NaverMap.tsx              # 네이버맵 래퍼 컴포넌트
+│   │   │   ├── NaverMapProvider.tsx      # 네이버맵 Provider
+│   │   │   ├── RegionPolygon.tsx         # 지역 폴리곤 오버레이
 │   │   │   └── ArticleMarker.tsx         # 매물 마커
 │   │   │
 │   │   ├── search/
@@ -92,7 +94,7 @@ estate/
 │   │   │   └── transform.ts             # 네이버 응답 -> 내부 모델 변환
 │   │   │
 │   │   ├── kakao/
-│   │   │   └── loader.ts                # 카카오맵 SDK 로딩 유틸
+│   │   │   └── local.ts                 # 카카오 Local API 유틸 (주변 편의시설 조회)
 │   │   │
 │   │   ├── cache/
 │   │   │   └── server-cache.ts          # [신규] 서버 사이드 인메모리 캐시
@@ -114,7 +116,7 @@ estate/
 ├── scripts/
 │   └── fetch-regions.ts                 # 서울 구/동 데이터 수집 스크립트
 │
-├── .env.local                            # 환경변수 (KAKAO_APP_KEY 등)
+├── .env.local                            # 환경변수 (NEXT_PUBLIC_NCP_CLIENT_ID 등)
 ├── .gitignore
 ├── next.config.ts
 ├── package.json
@@ -156,8 +158,8 @@ estate/
 ### 지도
 | 분류 | 기술 | 선정 이유 |
 |------|------|-----------|
-| 지도 API | Kakao Maps JavaScript SDK | 일 30만회 무료, 한국 주소 체계 최적 |
-| React 바인딩 | react-kakao-maps-sdk | 선언적 카카오맵 사용, Next.js App Router 호환 |
+| 지도 API | Naver Maps JavaScript API | 국내 지도/부동산 맥락과 구현 일치 |
+| React 바인딩 | react-naver-maps | 현재 코드베이스와 동일한 지도 스택 |
 
 ### 상태 관리 및 데이터 페칭
 | 분류 | 기술 | 선정 이유 |
@@ -179,24 +181,22 @@ estate/
     "next": "^14.2.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
-    "react-kakao-maps-sdk": "^1.1.0",
+    "react-naver-maps": "^0.1.5",
     "swr": "^2.2.0",
-    "zustand": "^4.5.0",
-    "zod": "^3.23.0",
-    "lucide-react": "^0.400.0",
-    "p-limit": "^6.0.0"
+    "zustand": "^5.0.11",
+    "zod": "^4.3.6",
+    "lucide-react": "^0.577.0",
+    "p-limit": "^7.3.0"
   },
   "devDependencies": {
-    "typescript": "^5.5.0",
-    "tailwindcss": "^3.4.0",
-    "postcss": "^8.4.0",
-    "autoprefixer": "^10.4.0",
-    "@types/react": "^18.3.0",
-    "@types/node": "^20.0.0",
-    "eslint": "^8.57.0",
-    "eslint-config-next": "^14.2.0",
-    "prettier": "^3.3.0",
-    "tsx": "^4.0.0"
+    "typescript": "^5",
+    "tailwindcss": "^3.4.1",
+    "postcss": "^8",
+    "@types/react": "^18",
+    "@types/node": "^20",
+    "eslint": "^8",
+    "eslint-config-next": "^14.2.35",
+    "tsx": "^4.21.0"
   },
   "scripts": {
     "dev": "next dev",

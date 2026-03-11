@@ -1,341 +1,53 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { cortarNoToBounds } from '@/lib/region-lookup';
-import { getCached, setCache, buildCacheKey } from '@/lib/cache/server-cache';
+import { getCached, setCache } from '@/lib/cache/server-cache';
 import { fetchArticleList } from '@/lib/naver/client';
 import { transformNaverArticle } from '@/lib/naver/transform';
+import type { NaverArticleItem } from '@/lib/naver/types';
 import { apiSuccess, apiError } from '@/lib/api-response';
 import { TRADE_TYPE_TO_NAVER, BUILDING_TYPE_TO_NAVER } from '@/lib/constants';
+import { mergeNaverFetchDiagnostics } from '@/lib/naver/diagnostics';
+import { createArticleFetchPlan } from '@/lib/naver/query-planner';
+import { normalizeArticleResults } from '@/lib/naver/normalize-articles';
+import {
+  buildArticleCacheKey,
+  paginateArticles,
+  shouldForceArticleRefresh,
+  sortArticles,
+} from '@/lib/articles/query';
 import type { Article, TradeType, BuildingType } from '@/types/article';
 
 // Node.js Runtime 사용 - Vercel Seoul 리전(icn1)에서 실행
 
-// 서울 주요 지역 샘플 매물 데이터 (API 실패 시 fallback)
-const SAMPLE_ARTICLES: Article[] = [
-  {
-    id: 'sample-1',
-    articleName: '래미안 퍼스티지',
-    buildingType: 'APT',
-    tradeType: 'SALE',
-    address: '서울시 강남구 개포동 123',
-    roadAddress: '서울시 강남구 개포로 123',
-    gu: '강남구',
-    dong: '개포동',
-    lat: 37.5172,
-    lng: 127.0473,
-    dealPrice: 185000,
-    deposit: null,
-    monthlyRent: null,
-    priceText: '18억 5,000',
-    supplyArea: 112.45,
-    exclusiveArea: 84.99,
-    supplyAreaPyeong: 34,
-    exclusiveAreaPyeong: 25.7,
-    floor: '15/28',
-    totalFloor: 28,
-    buildYear: '2018',
-    direction: '남향',
-    roomCount: 4,
-    bathroomCount: 2,
-    description: '역세권, 학군우수 단지',
-    confirmDate: '2024-01-15',
-    agentName: '강남부동산',
-    articleUrl: 'https://m.land.naver.com/article/sample-1',
-    thumbnailUrl: null,
-    hasDetailInfo: false,
-  },
-  {
-    id: 'sample-2',
-    articleName: '아크로리버파크',
-    buildingType: 'APT',
-    tradeType: 'SALE',
-    address: '서울시 서초구 반포동 456',
-    roadAddress: '서울시 서초구 신반포로 456',
-    gu: '서초구',
-    dong: '반포동',
-    lat: 37.5219,
-    lng: 127.0107,
-    dealPrice: 420000,
-    deposit: null,
-    monthlyRent: null,
-    priceText: '42억',
-    supplyArea: 165.29,
-    exclusiveArea: 129.92,
-    supplyAreaPyeong: 50,
-    exclusiveAreaPyeong: 39.3,
-    floor: '25/35',
-    totalFloor: 35,
-    buildYear: '2016',
-    direction: '남동향',
-    roomCount: 5,
-    bathroomCount: 3,
-    description: '한강뷰, 프리미엄 단지',
-    confirmDate: '2024-01-14',
-    agentName: '반포공인중개사',
-    articleUrl: 'https://m.land.naver.com/article/sample-2',
-    thumbnailUrl: null,
-    hasDetailInfo: false,
-  },
-  {
-    id: 'sample-3',
-    articleName: '힐스테이트 청담',
-    buildingType: 'APT',
-    tradeType: 'JEONSE',
-    address: '서울시 강남구 청담동 789',
-    roadAddress: '서울시 강남구 청담로 789',
-    gu: '강남구',
-    dong: '청담동',
-    lat: 37.5247,
-    lng: 127.0532,
-    dealPrice: null,
-    deposit: 120000,
-    monthlyRent: null,
-    priceText: '전세 12억',
-    supplyArea: 79.34,
-    exclusiveArea: 59.97,
-    supplyAreaPyeong: 24,
-    exclusiveAreaPyeong: 18.1,
-    floor: '8/20',
-    totalFloor: 20,
-    buildYear: '2022',
-    direction: '동향',
-    roomCount: 3,
-    bathroomCount: 2,
-    description: '신축, 역세권 단지',
-    confirmDate: '2024-01-13',
-    agentName: '청담부동산',
-    articleUrl: 'https://m.land.naver.com/article/sample-3',
-    thumbnailUrl: null,
-    hasDetailInfo: false,
-  },
-  {
-    id: 'sample-4',
-    articleName: '자이 타워팰리스',
-    buildingType: 'APT',
-    tradeType: 'MONTHLY',
-    address: '서울시 강남구 도곡동 321',
-    roadAddress: '서울시 강남구 도곡로 321',
-    gu: '강남구',
-    dong: '도곡동',
-    lat: 37.5089,
-    lng: 127.0628,
-    dealPrice: null,
-    deposit: 10000,
-    monthlyRent: 350,
-    priceText: '1억/350만',
-    supplyArea: 66.12,
-    exclusiveArea: 49.59,
-    supplyAreaPyeong: 20,
-    exclusiveAreaPyeong: 15,
-    floor: '12/45',
-    totalFloor: 45,
-    buildYear: '2010',
-    direction: '남서향',
-    roomCount: 2,
-    bathroomCount: 1,
-    description: '고층뷰, 풀옵션',
-    confirmDate: '2024-01-12',
-    agentName: '도곡부동산',
-    articleUrl: 'https://m.land.naver.com/article/sample-4',
-    thumbnailUrl: null,
-    hasDetailInfo: false,
-  },
-  {
-    id: 'sample-5',
-    articleName: '푸르지오 시티',
-    buildingType: 'OFFICETEL',
-    tradeType: 'MONTHLY',
-    address: '서울시 강남구 역삼동 654',
-    roadAddress: '서울시 강남구 테헤란로 654',
-    gu: '강남구',
-    dong: '역삼동',
-    lat: 37.5013,
-    lng: 127.0396,
-    dealPrice: null,
-    deposit: 5000,
-    monthlyRent: 150,
-    priceText: '5,000/150만',
-    supplyArea: 42.98,
-    exclusiveArea: 33.06,
-    supplyAreaPyeong: 13,
-    exclusiveAreaPyeong: 10,
-    floor: '7/25',
-    totalFloor: 25,
-    buildYear: '2019',
-    direction: '북향',
-    roomCount: 1,
-    bathroomCount: 1,
-    description: '역세권, 올수리 완료',
-    confirmDate: '2024-01-11',
-    agentName: '역삼공인중개사',
-    articleUrl: 'https://m.land.naver.com/article/sample-5',
-    thumbnailUrl: null,
-    hasDetailInfo: false,
-  },
-  // 성동구 샘플
-  {
-    id: 'sample-6',
-    articleName: '트리마제',
-    buildingType: 'APT',
-    tradeType: 'SALE',
-    address: '서울시 성동구 성수동1가 123',
-    roadAddress: '서울시 성동구 왕십리로 123',
-    gu: '성동구',
-    dong: '성수동1가',
-    lat: 37.5445,
-    lng: 127.0560,
-    dealPrice: 220000,
-    deposit: null,
-    monthlyRent: null,
-    priceText: '22억',
-    supplyArea: 132.23,
-    exclusiveArea: 99.17,
-    supplyAreaPyeong: 40,
-    exclusiveAreaPyeong: 30,
-    floor: '18/32',
-    totalFloor: 32,
-    buildYear: '2020',
-    direction: '남향',
-    roomCount: 4,
-    bathroomCount: 2,
-    description: '성수동 랜드마크, 한강뷰',
-    confirmDate: '2024-01-15',
-    agentName: '성수부동산',
-    articleUrl: 'https://m.land.naver.com/article/sample-6',
-    thumbnailUrl: null,
-    hasDetailInfo: false,
-  },
-  {
-    id: 'sample-7',
-    articleName: '서울숲 리버뷰자이',
-    buildingType: 'APT',
-    tradeType: 'JEONSE',
-    address: '서울시 성동구 성수동2가 456',
-    roadAddress: '서울시 성동구 서울숲길 456',
-    gu: '성동구',
-    dong: '성수동2가',
-    lat: 37.5471,
-    lng: 127.0423,
-    dealPrice: null,
-    deposit: 95000,
-    monthlyRent: null,
-    priceText: '전세 9억 5,000',
-    supplyArea: 99.17,
-    exclusiveArea: 74.38,
-    supplyAreaPyeong: 30,
-    exclusiveAreaPyeong: 22.5,
-    floor: '12/25',
-    totalFloor: 25,
-    buildYear: '2019',
-    direction: '동향',
-    roomCount: 3,
-    bathroomCount: 2,
-    description: '서울숲 인접, 초역세권',
-    confirmDate: '2024-01-14',
-    agentName: '서울숲공인중개사',
-    articleUrl: 'https://m.land.naver.com/article/sample-7',
-    thumbnailUrl: null,
-    hasDetailInfo: false,
-  },
-  {
-    id: 'sample-8',
-    articleName: '왕십리 센트라스',
-    buildingType: 'APT',
-    tradeType: 'SALE',
-    address: '서울시 성동구 행당동 789',
-    roadAddress: '서울시 성동구 행당로 789',
-    gu: '성동구',
-    dong: '행당동',
-    lat: 37.5614,
-    lng: 127.0369,
-    dealPrice: 125000,
-    deposit: null,
-    monthlyRent: null,
-    priceText: '12억 5,000',
-    supplyArea: 84.99,
-    exclusiveArea: 59.97,
-    supplyAreaPyeong: 25.7,
-    exclusiveAreaPyeong: 18.1,
-    floor: '8/20',
-    totalFloor: 20,
-    buildYear: '2015',
-    direction: '남서향',
-    roomCount: 3,
-    bathroomCount: 1,
-    description: '왕십리역 도보 5분',
-    confirmDate: '2024-01-13',
-    agentName: '행당부동산',
-    articleUrl: 'https://m.land.naver.com/article/sample-8',
-    thumbnailUrl: null,
-    hasDetailInfo: false,
-  },
-  // 마포구 샘플
-  {
-    id: 'sample-9',
-    articleName: '마포래미안푸르지오',
-    buildingType: 'APT',
-    tradeType: 'SALE',
-    address: '서울시 마포구 아현동 123',
-    roadAddress: '서울시 마포구 마포대로 123',
-    gu: '마포구',
-    dong: '아현동',
-    lat: 37.5516,
-    lng: 126.9565,
-    dealPrice: 175000,
-    deposit: null,
-    monthlyRent: null,
-    priceText: '17억 5,000',
-    supplyArea: 112.45,
-    exclusiveArea: 84.99,
-    supplyAreaPyeong: 34,
-    exclusiveAreaPyeong: 25.7,
-    floor: '20/35',
-    totalFloor: 35,
-    buildYear: '2014',
-    direction: '남향',
-    roomCount: 4,
-    bathroomCount: 2,
-    description: '아현역 초역세권, 대단지',
-    confirmDate: '2024-01-12',
-    agentName: '마포부동산',
-    articleUrl: 'https://m.land.naver.com/article/sample-9',
-    thumbnailUrl: null,
-    hasDetailInfo: false,
-  },
-  // 송파구 샘플
-  {
-    id: 'sample-10',
-    articleName: '잠실엘스',
-    buildingType: 'APT',
-    tradeType: 'SALE',
-    address: '서울시 송파구 잠실동 456',
-    roadAddress: '서울시 송파구 올림픽로 456',
-    gu: '송파구',
-    dong: '잠실동',
-    lat: 37.5133,
-    lng: 127.1028,
-    dealPrice: 280000,
-    deposit: null,
-    monthlyRent: null,
-    priceText: '28억',
-    supplyArea: 132.23,
-    exclusiveArea: 99.17,
-    supplyAreaPyeong: 40,
-    exclusiveAreaPyeong: 30,
-    floor: '22/33',
-    totalFloor: 33,
-    buildYear: '2008',
-    direction: '남향',
-    roomCount: 4,
-    bathroomCount: 2,
-    description: '잠실 대장 아파트',
-    confirmDate: '2024-01-11',
-    agentName: '잠실공인중개사',
-    articleUrl: 'https://m.land.naver.com/article/sample-10',
-    thumbnailUrl: null,
-    hasDetailInfo: false,
-  },
-];
+// guCode를 구 이름으로 매핑 (서울 25개 구 전체)
+const guCodeToName: Record<string, string> = {
+  '1111000000': '종로구',
+  '1114000000': '중구',
+  '1117000000': '용산구',
+  '1120000000': '성동구',
+  '1121500000': '광진구',
+  '1123000000': '동대문구',
+  '1126000000': '중랑구',
+  '1129000000': '성북구',
+  '1130500000': '강북구',
+  '1132000000': '도봉구',
+  '1135000000': '노원구',
+  '1138000000': '은평구',
+  '1141000000': '서대문구',
+  '1144000000': '마포구',
+  '1147000000': '양천구',
+  '1150000000': '강서구',
+  '1153000000': '구로구',
+  '1154500000': '금천구',
+  '1156000000': '영등포구',
+  '1159000000': '동작구',
+  '1162000000': '관악구',
+  '1165000000': '서초구',
+  '1168000000': '강남구',
+  '1171000000': '송파구',
+  '1174000000': '강동구',
+};
 
 // 프론트엔드 필터 형식을 받는 스키마
 const querySchema = z.object({
@@ -364,9 +76,11 @@ const querySchema = z.object({
   areaMax: z.coerce.number().optional(),
 
   // 정렬 및 페이징
-  sortBy: z.string().default('recent'),
+  sortBy: z.string().default('price_asc'),
   page: z.coerce.number().int().positive().default(1),
   pageSize: z.coerce.number().int().positive().default(20),
+  _refresh: z.coerce.number().optional(),
+  _debug: z.string().optional(),
 });
 
 // 프론트 TradeType을 네이버 코드로 변환
@@ -419,6 +133,7 @@ export async function GET(req: NextRequest) {
   }
 
   const params = parsed.data;
+  const debugRequested = params._debug === '1';
 
   // cortarNo 결정: dongCode > guCode > cortarNo
   const cortarNo = params.dongCode || params.guCode || params.cortarNo;
@@ -444,7 +159,7 @@ export async function GET(req: NextRequest) {
   const tradeTypeCodes = convertTradeTypes(params.tradeTypes);
   const buildingTypeCodes = convertBuildingTypes(params.buildingTypes);
 
-  const cacheKey = buildCacheKey({
+  const cacheKey = buildArticleCacheKey({
     cortarNo,
     tradeTypes: tradeTypeCodes,
     buildingTypes: buildingTypeCodes,
@@ -456,105 +171,157 @@ export async function GET(req: NextRequest) {
     rentMax: params.monthlyRentMax,
     areaMin: params.areaMin,
     areaMax: params.areaMax,
-    sort: params.sortBy,
-    page: params.page,
-    pageSize: params.pageSize,
   });
+  const forceRefresh = debugRequested || shouldForceArticleRefresh(params._refresh, params.page);
 
-  const cached = getCached<{ articles: Article[]; total: number }>(cacheKey);
+  const cached = forceRefresh
+    ? null
+    : getCached<{ articles: Article[]; total: number }>(cacheKey);
+
   if (cached) {
+    const sortedArticles = sortArticles(cached.articles, params.sortBy);
+    const { pageArticles, hasMore } = paginateArticles(
+      sortedArticles,
+      params.page,
+      params.pageSize
+    );
+
     return apiSuccess({
-      ...cached,
+      articles: pageArticles,
+      total: cached.total,
       page: params.page,
       pageSize: params.pageSize,
-      hasMore: cached.articles.length >= params.pageSize,
+      hasMore,
+      ...(debugRequested
+        ? {
+            debug: {
+              cacheHit: true,
+            },
+          }
+        : {}),
     });
   }
 
   try {
-    const naverResponse = await fetchArticleList({
-      rletTpCd: buildingTypeCodes,
-      tradTpCd: tradeTypeCodes,
-      z: bounds.z,
-      lat: bounds.lat,
-      lon: bounds.lon,
-      btm: bounds.btm,
-      lft: bounds.lft,
-      top: bounds.top,
-      rgt: bounds.rgt,
-      page: params.page,
-      spcMin: params.areaMin,
-      spcMax: params.areaMax,
-      dprcMin: params.depositMin,
-      dprcMax: params.depositMax,
-      wprcMin: params.monthlyRentMin,
-      wprcMax: params.monthlyRentMax,
+    const fetchPlan = createArticleFetchPlan({
+      tradeTypes: tradeTypeCodes,
+      buildingTypes: buildingTypeCodes,
+      dealPriceMin: params.dealPriceMin,
+      dealPriceMax: params.dealPriceMax,
+      depositMin: params.depositMin,
+      depositMax: params.depositMax,
+      monthlyRentMin: params.monthlyRentMin,
+      monthlyRentMax: params.monthlyRentMax,
+      areaMin: params.areaMin,
+      areaMax: params.areaMax,
     });
+    const allNaverArticles: NaverArticleItem[] = [];
+    const diagnostics = [];
 
-    const articles = (naverResponse.body ?? []).map(transformNaverArticle);
+    for (let page = 1; page <= fetchPlan.maxPages; page++) {
+      const result = await fetchArticleList({
+        rletTpCd: buildingTypeCodes,
+        tradTpCd: tradeTypeCodes,
+        z: bounds.z,
+        lat: bounds.lat,
+        lon: bounds.lon,
+        btm: bounds.btm,
+        lft: bounds.lft,
+        top: bounds.top,
+        rgt: bounds.rgt,
+        page,
+        spcMin: params.areaMin,
+        spcMax: params.areaMax,
+        prcMin: params.dealPriceMin,
+        prcMax: params.dealPriceMax,
+        dprcMin: params.depositMin,
+        dprcMax: params.depositMax,
+        wprcMin: params.monthlyRentMin,
+        wprcMax: params.monthlyRentMax,
+      }, {
+        forceRefresh,
+      });
 
-    // 네이버 API가 빈 결과를 반환하면 (Vercel IP 차단 등) 샘플 데이터로 fallback
-    if (articles.length === 0) {
-      throw new Error('Naver API returned empty results - using sample data');
+      diagnostics.push(result.diagnostics);
+      allNaverArticles.push(...(result.response.body ?? []));
+
+      // 더 이상 데이터가 없으면 중단
+      if (!result.response.isMoreData && !result.response.more) {
+        break;
+      }
     }
 
-    const total = articles.length;
+    const requestedGuCode = params.guCode || cortarNo;
+    const requestedGuName = guCodeToName[requestedGuCode];
+    const normalized = normalizeArticleResults(
+      allNaverArticles.map(transformNaverArticle),
+      {
+        bounds,
+        requestedGuName,
+        dealPriceMin: params.dealPriceMin,
+        dealPriceMax: params.dealPriceMax,
+        depositMin: params.depositMin,
+        depositMax: params.depositMax,
+        monthlyRentMin: params.monthlyRentMin,
+        monthlyRentMax: params.monthlyRentMax,
+        areaMin: params.areaMin,
+        areaMax: params.areaMax,
+      }
+    );
+    const fetchDiagnostics = mergeNaverFetchDiagnostics(diagnostics);
 
-    const result = { articles, total };
-    setCache(cacheKey, result);
+    console.log('[Articles] fetch summary:', JSON.stringify({
+      cortarNo,
+      requestPage: params.page,
+      pageSize: params.pageSize,
+      pagesFetched: fetchDiagnostics.pagesFetched,
+      upstreamArticleCount: fetchDiagnostics.upstreamArticleCount,
+      rawCount: normalized.stats.rawCount,
+      afterDedupeCount: normalized.stats.afterDedupeCount,
+      afterBoundsCount: normalized.stats.afterBoundsCount,
+      afterGuCount: normalized.stats.afterGuCount,
+      afterPostFilterCount: normalized.stats.afterPostFilterCount,
+      retryCount: fetchDiagnostics.retryCount,
+      upstreamStatusCodes: fetchDiagnostics.upstreamStatusCodes,
+      requiresPostFilter: fetchPlan.requiresPostFilter,
+    }));
+
+    const articles = normalized.articles;
+
+    const total = articles.length;
+    setCache(cacheKey, { articles, total });
+
+    const sortedArticles = sortArticles(articles, params.sortBy);
+    const { pageArticles: paginatedArticles, hasMore } = paginateArticles(
+      sortedArticles,
+      params.page,
+      params.pageSize
+    );
 
     return apiSuccess({
-      articles,
+      articles: paginatedArticles,
       total,
       page: params.page,
       pageSize: params.pageSize,
-      hasMore: articles.length >= params.pageSize,
+      hasMore,
+      ...(debugRequested
+        ? {
+            debug: {
+              fetchPlan,
+              naver: fetchDiagnostics,
+              normalization: normalized.stats,
+            },
+          }
+        : {}),
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
-    console.error('Naver API error:', message, '- returning sample data');
+    console.error('[Articles] Naver API error for cortarNo:', cortarNo, '-', message);
 
-    // guCode를 구 이름으로 매핑
-    const guCodeToName: Record<string, string> = {
-      '1168000000': '강남구',
-      '1165000000': '서초구',
-      '1120000000': '성동구',
-      '1144000000': '마포구',
-      '1171000000': '송파구',
-      '1121000000': '광진구',
-      '1126000000': '동대문구',
-      '1129000000': '성북구',
-      '1174000000': '강동구',
-      '1156000000': '영등포구',
-    };
-
-    // API 실패 시 샘플 데이터 반환 (Vercel에서 네이버 API 차단 대응)
-    const filteredSamples = SAMPLE_ARTICLES.filter(article => {
-      // 지역 필터 (guCode가 있으면 해당 구의 매물만)
-      if (cortarNo) {
-        const guName = guCodeToName[cortarNo];
-        if (guName && article.gu !== guName) return false;
-      }
-      // 거래 유형 필터
-      if (params.tradeTypes) {
-        const types = Array.isArray(params.tradeTypes) ? params.tradeTypes : [params.tradeTypes];
-        if (!types.includes(article.tradeType)) return false;
-      }
-      // 건물 유형 필터
-      if (params.buildingTypes) {
-        const types = Array.isArray(params.buildingTypes) ? params.buildingTypes : [params.buildingTypes];
-        if (!types.includes(article.buildingType)) return false;
-      }
-      return true;
-    });
-
-    return apiSuccess({
-      articles: filteredSamples,
-      total: filteredSamples.length,
-      page: params.page,
-      pageSize: params.pageSize,
-      hasMore: false,
-      _isSampleData: true, // 클라이언트에서 샘플 데이터임을 알 수 있도록
-    });
+    return apiError(
+      'NAVER_API_ERROR',
+      '매물 정보를 가져오는 데 실패했습니다. 잠시 후 다시 시도해주세요.',
+      503
+    );
   }
 }

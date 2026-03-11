@@ -7,7 +7,7 @@
  * m2 단위로 저장, 평(pyeong) 단위로 표시.
  */
 
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { useFilterStore } from "@/store/filterStore";
 import { AREA_RANGE } from "@/lib/constants";
 
@@ -31,7 +31,10 @@ export default function AreaFilter() {
   const setFilter = useFilterStore((s) => s.setFilter);
 
   const { min, max, step } = AREA_RANGE;
-  const current: [number, number] = areaRange ?? [min, max];
+  const current = useMemo<[number, number]>(
+    () => areaRange ?? [min, max],
+    [areaRange, min, max]
+  );
   const isDefault = areaRange === null;
 
   const minPct = ((current[0] - min) / (max - min)) * 100;

@@ -9,6 +9,7 @@ import { ChevronUp, ChevronDown } from "lucide-react";
 import FilterPanel from "@/components/filter/FilterPanel";
 import ArticleList from "@/components/article/ArticleList";
 import ArticleSkeleton from "@/components/article/ArticleSkeleton";
+import { ApiError } from "@/hooks/useArticles";
 
 type SheetState = "collapsed" | "half" | "full";
 
@@ -35,6 +36,7 @@ export default function MobileBottomSheet({
   const [showFilter, setShowFilter] = useState(false);
 
   const emptyState = error ? "error" : articles.length === 0 && !isLoading ? "empty" : "initial";
+  const errorCode = error instanceof ApiError ? error.code : undefined;
 
   const heightMap: Record<SheetState, string> = {
     collapsed: "h-16",
@@ -118,6 +120,7 @@ export default function MobileBottomSheet({
               articles={articles}
               selectedId={selectedArticleId}
               emptyState={emptyState}
+              errorCode={errorCode}
               onArticleClick={onArticleClick}
               onRetry={onRetry}
             />

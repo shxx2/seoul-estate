@@ -9,7 +9,7 @@
  *   - MONTHLY → 보증금 + 월세 (DEPOSIT_RANGE + MONTHLY_RENT_RANGE)
  */
 
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { useFilterStore } from "@/store/filterStore";
 import {
   DEAL_PRICE_RANGE,
@@ -67,7 +67,10 @@ function RangeSlider({
   onChange,
   formatFn = formatPrice,
 }: RangeSliderProps) {
-  const current: [number, number] = value ?? [min, max];
+  const current = useMemo<[number, number]>(
+    () => value ?? [min, max],
+    [value, min, max]
+  );
   const isDefault = value === null;
 
   const minPct = ((current[0] - min) / (max - min)) * 100;

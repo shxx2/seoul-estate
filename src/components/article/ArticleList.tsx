@@ -22,6 +22,8 @@ export interface ArticleListProps {
   selectedId?: string | null;
   /** 빈 상태 종류 */
   emptyState?: ArticleEmptyState;
+  /** 에러 코드 (error 상태일 때 메시지 분기에 사용) */
+  errorCode?: string;
   /** 에러 시 재시도 콜백 */
   onRetry?: () => void;
   /** 카드 클릭 핸들러 */
@@ -38,6 +40,7 @@ export default function ArticleList({
   articles,
   selectedId,
   emptyState = "initial",
+  errorCode,
   onRetry,
   onArticleClick,
   className = "",
@@ -46,6 +49,7 @@ export default function ArticleList({
     return (
       <ArticleEmpty
         state={emptyState}
+        errorCode={errorCode}
         onRetry={onRetry}
       />
     );

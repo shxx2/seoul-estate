@@ -31,7 +31,7 @@ export function cortarNoToBounds(cortarNo: string): BoundsParams | null {
       lft: district.bounds.sw[1],
       top: district.bounds.ne[0],
       rgt: district.bounds.ne[1],
-      z: 13, // 구 단위 줌 레벨
+      z: 15, // 구 단위 줌 레벨 (15로 높여서 정확도 향상)
     };
   }
 

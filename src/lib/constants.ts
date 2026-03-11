@@ -51,7 +51,7 @@ export const BUILDING_TYPE_LABEL: Record<BuildingType, string> = {
 /** 매매가 슬라이더 설정 (만원 단위) */
 export const DEAL_PRICE_RANGE = {
   min: 0,
-  max: 500000,        // 50억
+  max: 200000,        // 20억
   step: 1000,         // 기본 1000만원 스텝
   stepHighThreshold: 100000, // 10억 이상부터 스텝 변경
   stepHigh: 5000,     // 10억 이상 5000만원 스텝

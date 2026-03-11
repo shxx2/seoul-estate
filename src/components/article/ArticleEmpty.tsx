@@ -22,6 +22,8 @@ export interface ArticleEmptyProps {
   state?: ArticleEmptyState;
   /** 에러 상태일 때 재시도 콜백 */
   onRetry?: () => void;
+  /** 에러 코드 (error 상태일 때 메시지 분기에 사용) */
+  errorCode?: string;
 }
 
 // ─────────────────────────────────────────────
@@ -60,11 +62,28 @@ const STATE_CONFIG: Record<ArticleEmptyState, StateConfig> = {
 // 컴포넌트
 // ─────────────────────────────────────────────
 
+function getErrorDescription(errorCode?: string): string {
+  switch (errorCode) {
+    case "NAVER_API_ERROR":
+      return "매물 정보를 가져오는 데 실패했습니다. 잠시 후 다시 시도해주세요.";
+    case "INVALID_PARAMS":
+      return "잘못된 검색 조건입니다.";
+    case "NETWORK_ERROR":
+      return "네트워크 연결을 확인해주세요.";
+    default:
+      return "오류가 발생했습니다.";
+  }
+}
+
 export default function ArticleEmpty({
   state = "initial",
   onRetry,
+  errorCode,
 }: ArticleEmptyProps) {
-  const config = STATE_CONFIG[state];
+  const config = {
+    ...STATE_CONFIG[state],
+    ...(state === "error" ? { description: getErrorDescription(errorCode) } : {}),
+  };
 
   return (
     <div

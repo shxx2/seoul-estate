@@ -1,6 +1,6 @@
 import useSWR from "swr";
 import type { Article } from "@/types/article";
-import type { FilterState } from "@/types/filter";
+import type { ArticleFilters } from "@/types/filter";
 
 interface ArticlesResponse {
   success: boolean;
@@ -13,12 +13,7 @@ interface ArticlesResponse {
   };
 }
 
-interface UseArticlesOptions {
-  /** 이 값이 변경될 때만 fetch 트리거 */
-  searchTrigger: number;
-}
-
-function buildQueryString(filters: FilterState): string {
+function buildQueryString(filters: ArticleFilters): string {
   const params = new URLSearchParams();
 
   if (filters.guCode) params.set("guCode", filters.guCode);
@@ -52,24 +47,43 @@ function buildQueryString(filters: FilterState): string {
   return params.toString();
 }
 
-const fetcher = (url: string): Promise<ArticlesResponse> =>
-  fetch(url).then((res) => {
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return res.json() as Promise<ArticlesResponse>;
-  });
+export function buildArticlesRequestKey(
+  appliedFilters: ArticleFilters | null,
+  refreshTrigger: number
+): string | null {
+  if (!appliedFilters) {
+    return null;
+  }
+
+  return `/api/articles?${buildQueryString(appliedFilters)}&_refresh=${refreshTrigger}`;
+}
+
+export class ApiError extends Error {
+  code: string;
+  constructor(code: string, message: string) {
+    super(message);
+    this.code = code;
+    this.name = "ApiError";
+  }
+}
+
+const fetcher = async (url: string): Promise<ArticlesResponse> => {
+  const res = await fetch(url);
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}));
+    const code = (errorBody as { error?: { code?: string } })?.error?.code || "UNKNOWN_ERROR";
+    const message = (errorBody as { error?: { message?: string } })?.error?.message || `HTTP ${res.status}`;
+    throw new ApiError(code, message);
+  }
+  return res.json() as Promise<ArticlesResponse>;
+};
 
 /**
  * 필터 상태 기반 매물 목록 조회 훅
- * searchTrigger가 변경될 때만 새로운 fetch 수행
+ * appliedFilters가 존재할 때만 실제 검색 요청을 수행한다.
  */
-export function useArticles(filters: FilterState, options: UseArticlesOptions) {
-  const { searchTrigger } = options;
-
-  // searchTrigger를 키에 포함시켜 변경 시에만 fetch
-  const key =
-    searchTrigger > 0
-      ? `/api/articles?${buildQueryString(filters)}&_t=${searchTrigger}`
-      : null;
+export function useArticles(appliedFilters: ArticleFilters | null, refreshTrigger: number) {
+  const key = buildArticlesRequestKey(appliedFilters, refreshTrigger);
 
   const { data, error, isLoading, isValidating, mutate } = useSWR<
     ArticlesResponse,

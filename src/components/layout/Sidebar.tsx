@@ -10,6 +10,7 @@ import ArticleList from "@/components/article/ArticleList";
 import ArticleSkeleton from "@/components/article/ArticleSkeleton";
 import Pagination from "@/components/common/Pagination";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ApiError } from "@/hooks/useArticles";
 
 // 안정적인 no-op 함수 (매 렌더 시 새 함수 생성 방지)
 const noop = () => {};
@@ -53,6 +54,7 @@ export default function Sidebar({
   }, [isLoading, articles.length]);
 
   const emptyState = error ? "error" : articles.length === 0 && !isLoading ? "empty" : "initial";
+  const errorCode = error instanceof ApiError ? error.code : undefined;
 
   return (
     // relative: 접기 버튼의 absolute 기준점을 이 요소로 설정
@@ -99,6 +101,7 @@ export default function Sidebar({
                 articles={articles}
                 selectedId={selectedArticleId}
                 emptyState={emptyState}
+                errorCode={errorCode}
                 onArticleClick={onArticleClick}
                 onRetry={onRetry}
               />

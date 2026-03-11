@@ -1,6 +1,11 @@
 /** 네이버 m.land.naver.com cluster API 응답 (articleList) */
 export interface NaverArticleListResponse {
-  isMoreData: boolean;
+  code?: string;
+  isMoreData?: boolean;
+  more?: boolean;  // 네이버 API가 두 필드 중 하나를 사용
+  page?: number;
+  z?: number;
+  TIME?: boolean;
   body: NaverArticleItem[];
 }
 
@@ -28,6 +33,7 @@ export interface NaverArticleItem {
   repImgThumb: string;   // 썸네일 크기 타입 (e.g. "f130_98")
 
   // 선택적 필드 (상세 API 또는 일부 응답에서만 존재)
+  cortarNo?: string;         // 법정동코드 (e.g. "1126010100" = 중랑구 면목동)
   address?: string;          // 지번 주소
   roadAddress?: string;      // 도로명 주소
   buildYear?: string;        // 건축년도

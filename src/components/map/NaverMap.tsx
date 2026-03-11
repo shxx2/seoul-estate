@@ -32,6 +32,8 @@ function NaverMapInner({
 }: NaverMapProps) {
   const navermaps = useNavermaps();
   const mapRef = useRef<naver.maps.Map | null>(null);
+  const prevCenterRef = useRef<{ lat: number; lng: number } | null>(null);
+  const prevZoomRef = useRef<number | null>(null);
 
   const handleRef = useCallback((map: naver.maps.Map | null) => {
     if (map && map !== mapRef.current) {
@@ -39,6 +41,31 @@ function NaverMapInner({
       onLoad?.(map);
     }
   }, [onLoad]);
+
+  // center/zoom 변경 시 지도 이동 (부드럽게 이동)
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    const centerChanged =
+      prevCenterRef.current?.lat !== center.lat ||
+      prevCenterRef.current?.lng !== center.lng;
+    const zoomChanged = prevZoomRef.current !== zoom;
+
+    if (centerChanged || zoomChanged) {
+      const newCenter = new navermaps.LatLng(center.lat, center.lng);
+
+      // panTo로 부드럽게 이동 (줌 변경이 있으면 morph 사용)
+      if (zoomChanged) {
+        map.morph(newCenter, zoom, { duration: 300, easing: "easeOutCubic" });
+      } else if (centerChanged) {
+        map.panTo(newCenter, { duration: 300, easing: "easeOutCubic" });
+      }
+
+      prevCenterRef.current = { lat: center.lat, lng: center.lng };
+      prevZoomRef.current = zoom;
+    }
+  }, [center, zoom, navermaps]);
 
   return (
     <MapDiv className={className} style={{ width: "100%", height: "100%", ...style }}>

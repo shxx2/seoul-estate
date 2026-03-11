@@ -1,6 +1,6 @@
 import type { TradeType, BuildingType } from "./article";
 
-export interface FilterState {
+export interface ArticleFilters {
   // 지역 필터
   guCode: string | null;           // 선택된 구 코드 (cortarNo)
   dongCode: string | null;         // 선택된 동 코드 (cortarNo)
@@ -26,7 +26,7 @@ export interface FilterState {
   // 전용면적 범위 (m2)
   areaRange: [number, number] | null;
 
-  // 정렬 (기본값: recent)
+  // 정렬 (기본값: 가격 낮은 순)
   sortBy: "price_asc" | "price_desc" | "area_asc" | "area_desc" | "recent";
 
   // 페이지네이션
@@ -34,13 +34,17 @@ export interface FilterState {
 
   // 페이지당 매물 수 (기본값: 20)
   pageSize: number;
+}
 
-  // 검색 트리거 (이 값이 변경될 때만 API 호출)
-  searchTrigger: number;
+export interface FilterState extends ArticleFilters {
+  // 실제 조회에 사용 중인 필터 스냅샷
+  appliedFilters: ArticleFilters | null;
+  // 명시적 새로고침 트리거 (검색 버튼 클릭 시 증가)
+  refreshTrigger: number;
 }
 
 // 기본 필터 값
-export const DEFAULT_FILTER: FilterState = {
+export const DEFAULT_ARTICLE_FILTERS: ArticleFilters = {
   guCode: null,
   dongCode: null,
   tradeTypes: ["SALE"],
@@ -50,8 +54,13 @@ export const DEFAULT_FILTER: FilterState = {
   depositRange: null,
   monthlyRentRange: null,
   areaRange: null,
-  sortBy: "recent",
+  sortBy: "price_asc",
   page: 1,
   pageSize: 20,
-  searchTrigger: 1,
+};
+
+export const DEFAULT_FILTER: FilterState = {
+  ...DEFAULT_ARTICLE_FILTERS,
+  appliedFilters: null,
+  refreshTrigger: 0,
 };

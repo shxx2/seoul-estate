@@ -52,7 +52,7 @@ export default function RegionSearch({
   className = "",
 }: RegionSearchProps) {
   const setFilter = useFilterStore((s) => s.setFilter);
-  const triggerSearch = useFilterStore((s) => s.triggerSearch);
+  const submitSearch = useFilterStore((s) => s.submitSearch);
 
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Region[]>([]);
@@ -105,16 +105,18 @@ export default function RegionSearch({
         setFilter("dongCode", region.cortarNo);
       }
 
+      submitSearch();
+
       inputRef.current?.blur();
     },
-    [setFilter]
+    [setFilter, submitSearch]
   );
 
   // ─── 검색 실행 ────────────────────────────
 
   const handleSearch = useCallback(() => {
-    triggerSearch();
-  }, [triggerSearch]);
+    submitSearch();
+  }, [submitSearch]);
 
   // ─── 입력 초기화 ──────────────────────────
 
@@ -152,6 +154,7 @@ export default function RegionSearch({
           e.preventDefault();
           if (activeIndex >= 0 && results[activeIndex]) {
             handleSelect(results[activeIndex]);
+            break;
           }
           handleSearch();
           break;

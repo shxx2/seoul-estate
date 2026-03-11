@@ -225,6 +225,13 @@ export async function GET(req: NextRequest) {
       fetchPlan.maxPages,
       resolveArticleFetchBatchSize(fetchPlan, runtimeConfig.maxConcurrentRequests)
     );
+    console.log('[Articles] fetch execution:', JSON.stringify({
+      cortarNo,
+      maxPages: fetchPlan.maxPages,
+      requiresPostFilter: fetchPlan.requiresPostFilter,
+      batchSize: pageBatches[0]?.length ?? 0,
+      batchCount: pageBatches.length,
+    }));
     const allNaverArticles: NaverArticleItem[] = [];
     const diagnostics = [];
 

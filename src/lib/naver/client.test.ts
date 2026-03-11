@@ -97,6 +97,6 @@ test("uses a longer single-attempt upstream fetch profile on vercel", () => {
     maxRetries: 0,
     delayMinMs: 0,
     delayMaxMs: 0,
-    maxConcurrentRequests: 2,
+    maxConcurrentRequests: 4,
   });
 });

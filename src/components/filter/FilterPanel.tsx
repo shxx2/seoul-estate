@@ -10,7 +10,7 @@
 import React, { useState, useEffect } from "react";
 import { SlidersHorizontal, ChevronDown, ChevronUp } from "lucide-react";
 import RegionSearch from "@/components/search/RegionSearch";
-import RegionSelect from "./RegionSelect";
+import RegionGridSelect from "./RegionGridSelect";
 import TradeTypeFilter from "./TradeTypeFilter";
 import BuildingTypeFilter from "./BuildingTypeFilter";
 import PriceRangeFilter from "./PriceRangeFilter";
@@ -108,10 +108,10 @@ export default function FilterPanel({ className = "", collapsed }: FilterPanelPr
           {/* 구분선 */}
           <div className="h-px bg-gray-100" />
 
-          {/* 지역 선택 (드롭다운) */}
+          {/* 지역 선택 (네이버 모바일 스타일) */}
           <Section label="지역">
-            <RegionSelect />
-            <div className="text-[10px] text-gray-400 mt-1">또는 검색:</div>
+            <RegionGridSelect />
+            <div className="text-[10px] text-gray-400 mt-2">또는 검색:</div>
             <RegionSearch placeholder="구, 동 검색" />
           </Section>
 

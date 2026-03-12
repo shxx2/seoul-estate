@@ -140,17 +140,24 @@ export default function Home() {
         {/* 지도 */}
         <div className="flex-1 relative">
           <NaverMap center={mapCenter} zoom={mapZoom}>
-            {/* 구/동 폴리곤 (매물 미선택 시) */}
-            {!selectedArticle && regionPolygonPaths && regionPolygonPaths.length > 0 && (
+            {/* 구/동 폴리곤 */}
+            {regionPolygonPaths && regionPolygonPaths.length > 0 && (
               <RegionPolygon paths={regionPolygonPaths} />
             )}
 
-            {/* 선택된 매물 마커 */}
+            {/* 모든 매물 마커 */}
+            {articles.map((article) => (
+              <ArticleMarker
+                key={article.id}
+                article={article}
+                isSelected={selectedArticle?.id === article.id}
+                onClick={() => handleArticleClick(article)}
+              />
+            ))}
+
+            {/* 선택된 매물의 대중교통 정보 */}
             {selectedArticle && (
-              <>
-                <ArticleMarker article={selectedArticle} onClick={() => {}} />
-                <TransitRouteOverlay lat={selectedArticle.lat} lng={selectedArticle.lng} />
-              </>
+              <TransitRouteOverlay lat={selectedArticle.lat} lng={selectedArticle.lng} />
             )}
           </NaverMap>
 

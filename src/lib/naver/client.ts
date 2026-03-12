@@ -78,12 +78,13 @@ export function resolveNaverRequestRuntimeConfig(
   const isVercel = env.VERCEL === "1" || env.VERCEL === "true";
 
   if (isVercel) {
+    // Hobby 플랜 10초 제한에 맞춤
     return {
-      requestTimeoutMs: 10000,
-      maxRetries: 3,
+      requestTimeoutMs: 3000,   // 3초 (빠르게 포기하고 재시도)
+      maxRetries: 1,            // 1회만 재시도 (총 2번 시도)
       delayMinMs: 0,
       delayMaxMs: 0,
-      maxConcurrentRequests: 4,
+      maxConcurrentRequests: 2, // 동시 2개 (안정성 확보)
     };
   }
 

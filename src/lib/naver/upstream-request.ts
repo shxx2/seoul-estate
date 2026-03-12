@@ -1,6 +1,19 @@
 import http from "node:http";
 import https from "node:https";
 
+// HTTP Keep-Alive 에이전트 (연결 재사용으로 TLS 핸드셰이크 오버헤드 감소)
+const httpsAgent = new https.Agent({
+  keepAlive: true,
+  maxSockets: 4,
+  timeout: 5000,
+});
+
+const httpAgent = new http.Agent({
+  keepAlive: true,
+  maxSockets: 4,
+  timeout: 5000,
+});
+
 export interface UpstreamTextRequestOptions {
   headers?: Record<string, string>;
   timeoutMs: number;
@@ -23,13 +36,14 @@ export async function requestUpstreamText(
     let settled = false;
     let timeoutError: Error | null = null;
 
+    const agent = targetUrl.protocol === "https:" ? httpsAgent : httpAgent;
+
     const req = transport.request(
       targetUrl,
       {
         method: "GET",
-        agent: false,
+        agent,
         headers: {
-          Connection: "close",
           ...options.headers,
         },
       },

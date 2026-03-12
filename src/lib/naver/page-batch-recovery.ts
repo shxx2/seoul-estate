@@ -17,6 +17,7 @@ export async function fetchPageBatchWithRecovery<T>(
 
   const results: Array<{ page: number; value: T }> = [];
   const recoveredPages: number[] = [];
+  const failedPages: number[] = [];
 
   for (let index = 0; index < options.pages.length; index += 1) {
     const page = options.pages[index];
@@ -27,15 +28,15 @@ export async function fetchPageBatchWithRecovery<T>(
         page,
         value: entry.value,
       });
-      continue;
+    } else {
+      // Vercel Hobby 10초 제한: recovery 재시도 제거, 실패 페이지는 스킵
+      failedPages.push(page);
+      console.warn(`[PageBatch] Page ${page} failed, skipping (no recovery for Hobby plan)`);
     }
+  }
 
-    const recovered = await options.fetchPage(page);
-    results.push({
-      page,
-      value: recovered,
-    });
-    recoveredPages.push(page);
+  if (failedPages.length > 0) {
+    console.warn(`[PageBatch] Skipped ${failedPages.length} pages: ${failedPages.join(", ")}`);
   }
 
   return {

@@ -17,8 +17,9 @@ export interface ArticleFetchPlan {
   stopWhenEnoughFiltered: boolean;
 }
 
-const DEFAULT_MAX_PAGES = 3;
-const DEEP_CRAWL_MAX_PAGES = 15;
+// Vercel Hobby 플랜 10초 제한에 맞춤
+const DEFAULT_MAX_PAGES = 2;
+const DEEP_CRAWL_MAX_PAGES = 3;
 
 export function createArticleFetchPlan(params: ArticleFetchPlanParams): ArticleFetchPlan {
   const requiresPostFilter =

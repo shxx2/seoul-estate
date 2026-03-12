@@ -359,6 +359,12 @@
       "type": "file"
     },
     {
+      "path": "src/components/layout/Sidebar.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1773324747754,
+      "type": "file"
+    },
+    {
       "path": "src/hooks/useArticleDetail.ts",
       "accessCount": 1,
       "lastAccessed": 1773319687286,
@@ -440,12 +446,6 @@
       "path": "src/components/layout/Header.tsx",
       "accessCount": 1,
       "lastAccessed": 1773324593887,
-      "type": "file"
-    },
-    {
-      "path": "src/components/layout/Sidebar.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1773324599015,
       "type": "file"
     },
     {

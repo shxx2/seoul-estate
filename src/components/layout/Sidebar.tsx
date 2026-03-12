@@ -45,13 +45,13 @@ export default function Sidebar({
   const [filterCollapsed, setFilterCollapsed] = useState(false);
   const prevIsLoading = useRef(isLoading);
 
-  // 검색 완료(isLoading false로 전환) 시 필터 자동 접기
+  // 검색 시작(isLoading true로 전환) 시 필터 자동 접기
   useEffect(() => {
-    if (prevIsLoading.current && !isLoading && articles.length > 0) {
+    if (!prevIsLoading.current && isLoading) {
       setFilterCollapsed(true);
     }
     prevIsLoading.current = isLoading;
-  }, [isLoading, articles.length]);
+  }, [isLoading]);
 
   const emptyState = error ? "error" : articles.length === 0 && !isLoading ? "empty" : "initial";
   const errorCode = error instanceof ApiError ? error.code : undefined;

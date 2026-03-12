@@ -1,7 +1,23 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import type { FilterState, ArticleFilters } from "@/types/filter";
 import type { TradeType, BuildingType } from "@/types/article";
 import { DEFAULT_FILTER, DEFAULT_ARTICLE_FILTERS } from "@/types/filter";
+
+// ─────────────────────────────────────────────
+// localStorage에 저장할 필터 키 (지역/페이징 제외)
+// ─────────────────────────────────────────────
+
+const PERSISTED_KEYS = [
+  "tradeTypes",
+  "primaryTradeType",
+  "buildingTypes",
+  "dealPriceRange",
+  "depositRange",
+  "monthlyRentRange",
+  "areaRange",
+  "sortBy",
+] as const;
 
 // ─────────────────────────────────────────────
 // 스토어 액션 타입
@@ -46,12 +62,14 @@ interface FilterActions {
 // 스토어
 // ─────────────────────────────────────────────
 
-export const useFilterStore = create<FilterState & FilterActions>((set, get) => ({
-  ...DEFAULT_FILTER,
+export const useFilterStore = create<FilterState & FilterActions>()(
+  persist(
+    (set, get) => ({
+      ...DEFAULT_FILTER,
 
-  // draft 상태를 applied 검색 조건으로 복사
-  // 검색 버튼/지역 선택 시에만 호출한다.
-  submitSearch: () => {
+      // draft 상태를 applied 검색 조건으로 복사
+      // 검색 버튼/지역 선택 시에만 호출한다.
+      submitSearch: () => {
     set((state) => ({
       page: 1,
       appliedFilters: {
@@ -144,4 +162,22 @@ export const useFilterStore = create<FilterState & FilterActions>((set, get) => 
       ...DEFAULT_ARTICLE_FILTERS,
     }));
   },
-}));
+    }),
+    {
+      name: "estate-filters",
+      // 지역/페이징은 저장하지 않음 (사용자 선호 필터만 저장)
+      partialize: (state) => ({
+        tradeTypes: state.tradeTypes,
+        primaryTradeType: state.primaryTradeType,
+        buildingTypes: state.buildingTypes,
+        dealPriceRange: state.dealPriceRange,
+        depositRange: state.depositRange,
+        monthlyRentRange: state.monthlyRentRange,
+        areaRange: state.areaRange,
+        sortBy: state.sortBy,
+      }),
+      // SSR 호환: 클라이언트에서만 하이드레이션
+      skipHydration: true,
+    }
+  )
+);

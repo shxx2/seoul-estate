@@ -181,8 +181,14 @@
     },
     {
       "path": "src/components/article/ClusterArticleList.tsx",
-      "accessCount": 3,
-      "lastAccessed": 1773329125812,
+      "accessCount": 5,
+      "lastAccessed": 1773329364793,
+      "type": "file"
+    },
+    {
+      "path": "src/store/filterStore.ts",
+      "accessCount": 4,
+      "lastAccessed": 1773329311473,
       "type": "file"
     },
     {
@@ -195,6 +201,12 @@
       "path": "src/components/filter/MobileFilterSheet.tsx",
       "accessCount": 2,
       "lastAccessed": 1773328458212,
+      "type": "file"
+    },
+    {
+      "path": "src/app/layout.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1773329330813,
       "type": "file"
     },
     {
@@ -237,6 +249,24 @@
       "path": "src/lib/cluster-articles.ts",
       "accessCount": 1,
       "lastAccessed": 1773329006383,
+      "type": "file"
+    },
+    {
+      "path": "src/types/filter.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773329287075,
+      "type": "file"
+    },
+    {
+      "path": "src/components/providers/FilterHydration.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1773329318764,
+      "type": "file"
+    },
+    {
+      "path": "src/types/article.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773329349132,
       "type": "file"
     }
   ],

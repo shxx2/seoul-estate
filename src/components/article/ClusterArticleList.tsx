@@ -62,9 +62,9 @@ export default function ClusterArticleList({
             >
               {/* 썸네일 */}
               <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 relative">
-                {article.imageUrl || article.thumbnailUrl ? (
+                {article.thumbnailUrl ? (
                   <Image
-                    src={article.imageUrl || article.thumbnailUrl || ""}
+                    src={article.thumbnailUrl}
                     alt={article.articleName || "매물 이미지"}
                     fill
                     sizes="80px"
@@ -97,7 +97,7 @@ export default function ClusterArticleList({
                 </h3>
                 <p className="text-xs text-gray-500 mt-0.5">
                   {article.buildingType === "APT" ? "아파트" : article.buildingType === "VILLA" ? "빌라" : "오피스텔"}
-                  {article.area && ` · ${article.area}㎡`}
+                  {article.exclusiveArea && ` · ${article.exclusiveArea}㎡`}
                   {article.floor && ` · ${article.floor}`}
                 </p>
                 <p className="text-base font-bold text-blue-600 mt-1">

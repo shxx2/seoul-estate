@@ -36,16 +36,18 @@ export function cortarNoToBounds(cortarNo: string): BoundsParams | null {
   }
 
   // 동 단위: 모든 구의 dongs 배열에서 검색
+  // 동 좌표 범위를 확대하여 경계 매물 누락 방지 (마진 +/-0.007 추가)
+  const DONG_BOUNDS_MARGIN = 0.007; // 약 770m 확장
   for (const dist of seoulDistricts.districts) {
     const dong = dist.dongs.find(d => d.cortarNo === cortarNo);
     if (dong) {
       return {
         lat: dong.lat,
         lon: dong.lng,
-        btm: dong.bounds.sw[0],
-        lft: dong.bounds.sw[1],
-        top: dong.bounds.ne[0],
-        rgt: dong.bounds.ne[1],
+        btm: dong.bounds.sw[0] - DONG_BOUNDS_MARGIN,
+        lft: dong.bounds.sw[1] - DONG_BOUNDS_MARGIN,
+        top: dong.bounds.ne[0] + DONG_BOUNDS_MARGIN,
+        rgt: dong.bounds.ne[1] + DONG_BOUNDS_MARGIN,
         z: 15, // 동 단위 줌 레벨
       };
     }

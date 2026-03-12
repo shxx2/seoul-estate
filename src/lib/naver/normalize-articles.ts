@@ -112,8 +112,10 @@ export function normalizeArticleResults(
     );
   });
 
+  // cortarNo가 없어서 gu가 빈 문자열인 매물도 좌표 기반으로 유지
   const inRequestedGu = options.requestedGuName
-    ? inBounds.filter((article) => article.gu === options.requestedGuName)
+    ? inBounds.filter((article) =>
+        article.gu === options.requestedGuName || article.gu === "")
     : inBounds;
 
   const postFiltered = inRequestedGu.filter((article) =>

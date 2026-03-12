@@ -282,7 +282,8 @@ export async function GET(req: NextRequest) {
         allNaverArticles.push(...(result.response.body ?? []));
 
         // 더 이상 데이터가 없으면 다음 배치부터는 중단한다.
-        if (!result.response.isMoreData && !result.response.more) {
+        // undefined는 "더 있음"으로 처리 (명시적 false만 중단)
+        if (result.response.isMoreData === false || result.response.more === false) {
           reachedEndOfUpstream = true;
           break;
         }

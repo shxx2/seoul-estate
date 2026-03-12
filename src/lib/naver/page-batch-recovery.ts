@@ -29,9 +29,17 @@ export async function fetchPageBatchWithRecovery<T>(
         value: entry.value,
       });
     } else {
-      // Vercel Hobby 10초 제한: recovery 재시도 제거, 실패 페이지는 스킵
-      failedPages.push(page);
-      console.warn(`[PageBatch] Page ${page} failed, skipping (no recovery for Hobby plan)`);
+      // 실패한 페이지는 단일 재시도 (Cloudflare 프록시로 안정화됨)
+      console.warn(`[PageBatch] Page ${page} failed, attempting single retry...`);
+      try {
+        const recovered = await options.fetchPage(page);
+        results.push({ page, value: recovered });
+        recoveredPages.push(page);
+        console.log(`[PageBatch] Page ${page} recovered successfully`);
+      } catch {
+        failedPages.push(page);
+        console.warn(`[PageBatch] Page ${page} recovery failed, skipping`);
+      }
     }
   }
 

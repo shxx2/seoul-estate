@@ -162,45 +162,105 @@
   "hotPaths": [
     {
       "path": "",
-      "accessCount": 14,
-      "lastAccessed": 1773319697546,
+      "accessCount": 27,
+      "lastAccessed": 1773324255968,
       "type": "directory"
     },
     {
-      "path": "src/lib/naver/upstream-request.ts",
-      "accessCount": 8,
-      "lastAccessed": 1773321153730,
+      "path": "src",
+      "accessCount": 12,
+      "lastAccessed": 1773324278892,
+      "type": "directory"
+    },
+    {
+      "path": "src/app/api/articles/route.ts",
+      "accessCount": 11,
+      "lastAccessed": 1773324524196,
       "type": "file"
     },
     {
-      "path": "src/lib/naver/client.ts",
-      "accessCount": 6,
-      "lastAccessed": 1773320453308,
+      "path": "src/lib/naver/upstream-request.ts",
+      "accessCount": 10,
+      "lastAccessed": 1773324222516,
       "type": "file"
     },
     {
       "path": "src/lib/naver/query-planner.ts",
-      "accessCount": 6,
-      "lastAccessed": 1773320454873,
+      "accessCount": 10,
+      "lastAccessed": 1773324508577,
       "type": "file"
-    },
-    {
-      "path": "src",
-      "accessCount": 5,
-      "lastAccessed": 1773319703195,
-      "type": "directory"
     },
     {
       "path": "src/lib/naver/page-batch-recovery.ts",
-      "accessCount": 5,
-      "lastAccessed": 1773320001279,
+      "accessCount": 10,
+      "lastAccessed": 1773324528705,
       "type": "file"
     },
     {
-      "path": "src/app/api/articles/route.ts",
-      "accessCount": 5,
-      "lastAccessed": 1773320449023,
+      "path": "src/lib/naver/client.ts",
+      "accessCount": 9,
+      "lastAccessed": 1773324216740,
       "type": "file"
+    },
+    {
+      "path": "src/lib/naver/normalize-articles.ts",
+      "accessCount": 7,
+      "lastAccessed": 1773324499228,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/naver/diagnostics.ts",
+      "accessCount": 5,
+      "lastAccessed": 1773324218960,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/naver/endpoints.ts",
+      "accessCount": 5,
+      "lastAccessed": 1773324220511,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/naver/cache.ts",
+      "accessCount": 5,
+      "lastAccessed": 1773324229181,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/cache/server-cache.ts",
+      "accessCount": 5,
+      "lastAccessed": 1773324232555,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/naver/types.ts",
+      "accessCount": 5,
+      "lastAccessed": 1773324261382,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/region-lookup.ts",
+      "accessCount": 5,
+      "lastAccessed": 1773324505465,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/articles/query.ts",
+      "accessCount": 4,
+      "lastAccessed": 1773324222071,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/naver/transform.ts",
+      "accessCount": 4,
+      "lastAccessed": 1773324230260,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/constants.ts",
+      "accessCount": 4,
+      "lastAccessed": 1773324230451,
+      "type": "directory"
     },
     {
       "path": "src/app/api/articles/[id]/route.ts",
@@ -227,22 +287,10 @@
       "type": "file"
     },
     {
-      "path": "src/lib/naver/cache.ts",
+      "path": "workers/naver-proxy",
       "accessCount": 3,
-      "lastAccessed": 1773319693548,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/cache/server-cache.ts",
-      "accessCount": 3,
-      "lastAccessed": 1773319696095,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/naver/endpoints.ts",
-      "accessCount": 2,
-      "lastAccessed": 1773319680838,
-      "type": "file"
+      "lastAccessed": 1773324255286,
+      "type": "directory"
     },
     {
       "path": "src/app/api/regions/route.ts",
@@ -251,39 +299,51 @@
       "type": "file"
     },
     {
-      "path": "src/lib/naver/diagnostics.ts",
+      "path": "src/lib/format.ts",
       "accessCount": 2,
-      "lastAccessed": 1773319688663,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/constants.ts",
-      "accessCount": 2,
-      "lastAccessed": 1773319707427,
+      "lastAccessed": 1773324218687,
       "type": "directory"
     },
     {
-      "path": "src/lib/naver/normalize-articles.ts",
+      "path": "src/lib/naver/normalize-articles.test.ts",
       "accessCount": 2,
-      "lastAccessed": 1773319707766,
+      "lastAccessed": 1773324231341,
       "type": "file"
     },
     {
-      "path": "src/lib/naver/types.ts",
-      "accessCount": 1,
-      "lastAccessed": 1773319674492,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/naver/transform.ts",
-      "accessCount": 1,
-      "lastAccessed": 1773319674974,
+      "path": "src/lib/naver/query-planner.test.ts",
+      "accessCount": 2,
+      "lastAccessed": 1773324231762,
       "type": "file"
     },
     {
       "path": "src/hooks/useArticles.ts",
-      "accessCount": 1,
-      "lastAccessed": 1773319686670,
+      "accessCount": 2,
+      "lastAccessed": 1773324242035,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/naver",
+      "accessCount": 2,
+      "lastAccessed": 1773324251813,
+      "type": "directory"
+    },
+    {
+      "path": "src/lib/naver/client.test.ts",
+      "accessCount": 2,
+      "lastAccessed": 1773324251984,
+      "type": "file"
+    },
+    {
+      "path": "src/types/filter.ts",
+      "accessCount": 2,
+      "lastAccessed": 1773324256286,
+      "type": "file"
+    },
+    {
+      "path": "workers/naver-proxy/worker.js",
+      "accessCount": 2,
+      "lastAccessed": 1773324263018,
       "type": "file"
     },
     {
@@ -311,27 +371,45 @@
       "type": "directory"
     },
     {
-      "path": "src/lib/articles/query.ts",
-      "accessCount": 1,
-      "lastAccessed": 1773319696558,
-      "type": "file"
-    },
-    {
       "path": "src/app/api",
       "accessCount": 1,
       "lastAccessed": 1773319702636,
       "type": "directory"
     },
     {
-      "path": "workers/naver-proxy/worker.js",
-      "accessCount": 1,
-      "lastAccessed": 1773321136958,
-      "type": "file"
-    },
-    {
       "path": "workers/naver-proxy/wrangler.toml",
       "accessCount": 1,
       "lastAccessed": 1773321137486,
+      "type": "file"
+    },
+    {
+      "path": "src/types/article.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773324191363,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/naver/transform.test.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773324205764,
+      "type": "file"
+    },
+    {
+      "path": "src/store/filterStore.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773324242525,
+      "type": "file"
+    },
+    {
+      "path": "src/app",
+      "accessCount": 1,
+      "lastAccessed": 1773324260490,
+      "type": "directory"
+    },
+    {
+      "path": "src/lib/naver/upstream-request.test.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773324305229,
       "type": "file"
     }
   ],

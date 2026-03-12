@@ -168,8 +168,8 @@
     },
     {
       "path": "src",
-      "accessCount": 12,
-      "lastAccessed": 1773324278892,
+      "accessCount": 14,
+      "lastAccessed": 1773324580420,
       "type": "directory"
     },
     {
@@ -293,6 +293,12 @@
       "type": "directory"
     },
     {
+      "path": "src/components/filter/FilterPanel.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1773324642921,
+      "type": "file"
+    },
+    {
       "path": "src/app/api/regions/route.ts",
       "accessCount": 2,
       "lastAccessed": 1773319682442,
@@ -347,6 +353,12 @@
       "type": "file"
     },
     {
+      "path": "src/store/filterStore.ts",
+      "accessCount": 2,
+      "lastAccessed": 1773324594443,
+      "type": "file"
+    },
+    {
       "path": "src/hooks/useArticleDetail.ts",
       "accessCount": 1,
       "lastAccessed": 1773319687286,
@@ -395,12 +407,6 @@
       "type": "file"
     },
     {
-      "path": "src/store/filterStore.ts",
-      "accessCount": 1,
-      "lastAccessed": 1773324242525,
-      "type": "file"
-    },
-    {
       "path": "src/app",
       "accessCount": 1,
       "lastAccessed": 1773324260490,
@@ -410,6 +416,42 @@
       "path": "src/lib/naver/upstream-request.test.ts",
       "accessCount": 1,
       "lastAccessed": 1773324305229,
+      "type": "file"
+    },
+    {
+      "path": "src/components",
+      "accessCount": 1,
+      "lastAccessed": 1773324569999,
+      "type": "directory"
+    },
+    {
+      "path": "src/components/search/RegionSearch.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1773324579368,
+      "type": "file"
+    },
+    {
+      "path": "src/app/page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1773324579848,
+      "type": "file"
+    },
+    {
+      "path": "src/components/layout/Header.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1773324593887,
+      "type": "file"
+    },
+    {
+      "path": "src/components/layout/Sidebar.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1773324599015,
+      "type": "file"
+    },
+    {
+      "path": "src/components/filter/RegionSelect.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1773324628758,
       "type": "file"
     }
   ],

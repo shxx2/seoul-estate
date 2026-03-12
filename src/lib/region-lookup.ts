@@ -66,7 +66,7 @@ export function getRegionCenter(cortarNo: string): { lat: number; lng: number; z
   return {
     lat: bounds.lat,
     lng: bounds.lon,
-    zoom: 15, // 500m 축척으로 고정
+    zoom: 14, // 500m 축척으로 고정
   };
 }
 

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import useSWRInfinite from "swr/infinite";
 import type { Article } from "@/types/article";
 import type { ArticleFilters } from "@/types/filter";
@@ -69,8 +70,13 @@ function buildUrl(filters: ArticleFilters, page: number, refreshTrigger: number)
 
 /**
  * 무한 스크롤용 매물 목록 조회 훅
+ * initialLoadAll: true면 처음에 모든 페이지를 자동으로 로드 (지도 마커용)
  */
-export function useInfiniteArticles(appliedFilters: ArticleFilters | null, refreshTrigger: number) {
+export function useInfiniteArticles(
+  appliedFilters: ArticleFilters | null,
+  refreshTrigger: number,
+  options: { initialLoadAll?: boolean } = { initialLoadAll: true }
+) {
   const getKey = (pageIndex: number, previousPageData: ArticlesPageResponse | null) => {
     // 필터가 없으면 요청 안함
     if (!appliedFilters) return null;
@@ -95,6 +101,13 @@ export function useInfiniteArticles(appliedFilters: ArticleFilters | null, refre
   const total = data?.[0]?.data.total ?? 0;
   const hasMore = data ? data[data.length - 1]?.data.hasMore ?? false : false;
   const isLoadingMore = isLoading || (size > 0 && data && typeof data[size - 1] === "undefined");
+
+  // 자동으로 모든 페이지 로드 (지도에 전체 마커 표시용)
+  useEffect(() => {
+    if (options.initialLoadAll && hasMore && !isLoadingMore && !isLoading && data && data.length > 0) {
+      setSize(size + 1);
+    }
+  }, [options.initialLoadAll, hasMore, isLoadingMore, isLoading, data, size, setSize]);
 
   const loadMore = () => {
     if (!isLoadingMore && hasMore) {

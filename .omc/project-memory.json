@@ -168,8 +168,8 @@
     },
     {
       "path": "src/lib/naver/upstream-request.ts",
-      "accessCount": 7,
-      "lastAccessed": 1773320437417,
+      "accessCount": 8,
+      "lastAccessed": 1773321153730,
       "type": "file"
     },
     {
@@ -321,6 +321,18 @@
       "accessCount": 1,
       "lastAccessed": 1773319702636,
       "type": "directory"
+    },
+    {
+      "path": "workers/naver-proxy/worker.js",
+      "accessCount": 1,
+      "lastAccessed": 1773321136958,
+      "type": "file"
+    },
+    {
+      "path": "workers/naver-proxy/wrangler.toml",
+      "accessCount": 1,
+      "lastAccessed": 1773321137486,
+      "type": "file"
     }
   ],
   "userDirectives": []

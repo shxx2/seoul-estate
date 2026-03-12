@@ -1,0 +1,6 @@
+name = "naver-proxy"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# 무료 플랜 사용
+# 아시아 리전 우선

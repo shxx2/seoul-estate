@@ -1,4 +1,5 @@
 // Edge Runtime 호환 - fetch API 사용
+// Cloudflare Workers 프록시 지원
 
 export interface UpstreamTextRequestOptions {
   headers?: Record<string, string>;
@@ -11,6 +12,9 @@ export interface UpstreamTextResponse {
   text: string;
 }
 
+// Cloudflare Workers 프록시 URL (환경변수로 설정)
+const PROXY_URL = process.env.NAVER_PROXY_URL;
+
 export async function requestUpstreamText(
   url: string,
   options: UpstreamTextRequestOptions
@@ -19,9 +23,14 @@ export async function requestUpstreamText(
   const timeoutId = setTimeout(() => controller.abort(), options.timeoutMs);
 
   try {
-    const response = await fetch(url, {
+    // 프록시가 설정되어 있으면 프록시를 통해 요청
+    const targetUrl = PROXY_URL
+      ? `${PROXY_URL}/proxy?url=${encodeURIComponent(url)}`
+      : url;
+
+    const response = await fetch(targetUrl, {
       method: "GET",
-      headers: options.headers,
+      headers: PROXY_URL ? undefined : options.headers, // 프록시 사용시 헤더는 프록시가 설정
       signal: controller.signal,
     });
 

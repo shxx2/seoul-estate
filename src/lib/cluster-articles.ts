@@ -2,17 +2,15 @@ import type { Article } from "@/types/article";
 import type { ArticleCluster } from "@/components/map/ClusterMarker";
 
 /**
- * 동일 위치의 매물을 클러스터로 그룹화
- * 위치 비교 시 소수점 5자리까지만 비교 (약 1m 오차 허용)
+ * 동일 매물명의 매물을 클러스터로 그룹화
+ * 같은 아파트/건물의 여러 호실을 하나의 마커로 표시
  */
 export function clusterArticles(articles: Article[]): ArticleCluster[] {
   const clusterMap = new Map<string, ArticleCluster>();
 
   for (const article of articles) {
-    // 소수점 5자리로 반올림하여 키 생성 (약 1m 정밀도)
-    const latKey = article.lat.toFixed(5);
-    const lngKey = article.lng.toFixed(5);
-    const key = `${latKey},${lngKey}`;
+    // 매물명 + 동 이름으로 그룹화 (같은 건물의 매물을 하나로)
+    const key = `${article.articleName}-${article.dong}`;
 
     const price = article.dealPrice ?? article.deposit ?? 0;
 

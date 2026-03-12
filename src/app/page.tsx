@@ -55,6 +55,8 @@ export default function Home() {
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   // 선택된 클러스터 (여러 매물이 같은 위치에 있을 때)
   const [selectedCluster, setSelectedCluster] = useState<ArticleCluster | null>(null);
+  // 현재 줌 레벨 (마커 크기 조절용)
+  const [currentZoom, setCurrentZoom] = useState(14);
 
   // 매물을 클러스터로 그룹화
   const clusters = useMemo(() => clusterArticles(articles), [articles]);
@@ -157,7 +159,7 @@ export default function Home() {
 
         {/* 지도 */}
         <div className="flex-1 relative">
-          <NaverMap center={mapCenter} zoom={mapZoom}>
+          <NaverMap center={mapCenter} zoom={mapZoom} onZoomChanged={setCurrentZoom}>
             {/* 구/동 폴리곤 */}
             {regionPolygonPaths && regionPolygonPaths.length > 0 && (
               <RegionPolygon paths={regionPolygonPaths} />
@@ -173,6 +175,7 @@ export default function Home() {
                   cluster.articles.some((a) => a.id === selectedArticle?.id)
                 }
                 onClick={() => handleClusterClick(cluster)}
+                compact={currentZoom < 16}
               />
             ))}
 

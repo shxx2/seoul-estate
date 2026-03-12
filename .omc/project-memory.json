@@ -156,6 +156,12 @@
   },
   "hotPaths": [
     {
+      "path": "src/components/article/ArticleDetail.tsx",
+      "accessCount": 10,
+      "lastAccessed": 1773330432608,
+      "type": "file"
+    },
+    {
       "path": "src/components/filter/PriceRangeFilter.tsx",
       "accessCount": 9,
       "lastAccessed": 1773328904778,
@@ -168,15 +174,9 @@
       "type": "file"
     },
     {
-      "path": "src/components/article/ArticleDetail.tsx",
-      "accessCount": 9,
-      "lastAccessed": 1773329775594,
-      "type": "file"
-    },
-    {
       "path": "src/app/page.tsx",
-      "accessCount": 5,
-      "lastAccessed": 1773329102405,
+      "accessCount": 8,
+      "lastAccessed": 1773330419834,
       "type": "file"
     },
     {
@@ -189,6 +189,18 @@
       "path": "src/store/filterStore.ts",
       "accessCount": 4,
       "lastAccessed": 1773329311473,
+      "type": "file"
+    },
+    {
+      "path": "src/components/map/ClusterMarker.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1773330380880,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/cluster-articles.ts",
+      "accessCount": 3,
+      "lastAccessed": 1773330293454,
       "type": "file"
     },
     {
@@ -210,10 +222,22 @@
       "type": "file"
     },
     {
-      "path": "src/components",
-      "accessCount": 1,
-      "lastAccessed": 1773328371572,
+      "path": "src",
+      "accessCount": 2,
+      "lastAccessed": 1773330428991,
       "type": "directory"
+    },
+    {
+      "path": "src/components",
+      "accessCount": 2,
+      "lastAccessed": 1773330433062,
+      "type": "directory"
+    },
+    {
+      "path": "src/components/map/NaverMap.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1773330437159,
+      "type": "file"
     },
     {
       "path": "src/lib/constants.ts",
@@ -240,18 +264,6 @@
       "type": "file"
     },
     {
-      "path": "src/components/map/ClusterMarker.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1773328994763,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/cluster-articles.ts",
-      "accessCount": 1,
-      "lastAccessed": 1773329006383,
-      "type": "file"
-    },
-    {
       "path": "src/types/filter.ts",
       "accessCount": 1,
       "lastAccessed": 1773329287075,
@@ -267,6 +279,72 @@
       "path": "src/types/article.ts",
       "accessCount": 1,
       "lastAccessed": 1773329349132,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/naver/query-planner.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773330262777,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/articles/route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773330275783,
+      "type": "file"
+    },
+    {
+      "path": "src/hooks/useInfiniteArticles.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773330300076,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/tmap/pedestrian.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773330427566,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/kakao/local.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773330428078,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/transit/route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773330428253,
+      "type": "file"
+    },
+    {
+      "path": "src/hooks/useTransitRoute.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773330428514,
+      "type": "file"
+    },
+    {
+      "path": "src/types/transit.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773330432099,
+      "type": "file"
+    },
+    {
+      "path": "src/components/map/TransitRouteOverlay.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1773330432552,
+      "type": "file"
+    },
+    {
+      "path": "src/components/map",
+      "accessCount": 1,
+      "lastAccessed": 1773330436899,
+      "type": "directory"
+    },
+    {
+      "path": "src/components/map/NaverMapProvider.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1773330437470,
       "type": "file"
     }
   ],

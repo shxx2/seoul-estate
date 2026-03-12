@@ -3,10 +3,15 @@ import { z } from 'zod';
 import { getCached, setCache } from '@/lib/cache/server-cache';
 import { apiSuccess, apiError } from '@/lib/api-response';
 import { findNearestSubway, findNearestBusStop, findNearestMart, findNearestDaycare } from '@/lib/kakao/local';
+import { findNearestBusStopSeoul } from '@/lib/seoul-bus/station';
+import { getPedestrianRoute } from '@/lib/tmap/pedestrian';
 import type { TransitStation, TransitRoute } from '@/types/transit';
 
-/** 30분 TTL (ms) */
-const TRANSIT_CACHE_TTL_MS = 30 * 60 * 1000;
+/** 24시간 TTL (ms) - 도보 경로는 자주 변하지 않음 */
+const TRANSIT_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+
+/** 좌표 버킷 정밀도 (소수점 4자리 ≈ 11m) */
+const COORD_PRECISION = 4;
 
 const querySchema = z.object({
   lat: z.coerce.number().min(-90).max(90),
@@ -65,7 +70,10 @@ export async function GET(req: NextRequest) {
   }
 
   const { lat, lng } = parsed.data;
-  const cacheKey = `transit:${lat}:${lng}`;
+  // 좌표 버킷팅으로 캐시 효율 향상 (~11m 정밀도)
+  const bucketLat = lat.toFixed(COORD_PRECISION);
+  const bucketLng = lng.toFixed(COORD_PRECISION);
+  const cacheKey = `transit:${bucketLat}:${bucketLng}`;
 
   const cached = getTransitCached(cacheKey);
   if (cached) {
@@ -73,23 +81,28 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // 카카오 Local API로 가장 가까운 지하철역, 버스정류장, 마트, 어린이집 병렬 조회
-    const [subwayStation, busStopStation, martStation, daycareStation] = await Promise.all([
+    // 지하철/마트/어린이집: 카카오 Local API
+    // 버스정류장: 서울시 공공 API 우선, 실패 시 카카오 fallback
+    const [subwayStation, martStation, daycareStation] = await Promise.all([
       findNearestSubway(lat, lng),
-      findNearestBusStop(lat, lng),
       findNearestMart(lat, lng),
       findNearestDaycare(lat, lng),
     ]);
 
-    // 직선 거리 기반 도보 시간 추정 (80m/분)
-    const estimateWalkingRoute = (
+    // 버스정류장: 서울시 API → 카카오 fallback
+    let busStopStation = await findNearestBusStopSeoul(lat, lng);
+    if (!busStopStation) {
+      busStopStation = await findNearestBusStop(lat, lng);
+    }
+
+    // 직선 거리 기반 도보 시간 추정 (fallback용, 80m/분)
+    const estimateWalkingRouteFallback = (
       startLat: number,
       startLng: number,
       endLat: number,
       endLng: number
     ): TransitRoute => {
-      // Haversine 공식으로 직선 거리 계산
-      const R = 6371000; // 지구 반지름 (미터)
+      const R = 6371000;
       const dLat = ((endLat - startLat) * Math.PI) / 180;
       const dLng = ((endLng - startLng) * Math.PI) / 180;
       const a =
@@ -100,11 +113,7 @@ export async function GET(req: NextRequest) {
           Math.sin(dLng / 2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       const distance = R * c;
-
-      // 도보 시간 추정 (80m/분 = 1.33m/초)
       const duration = Math.round(distance / 1.33);
-
-      // 직선 경로 (시작점 → 끝점)
       return {
         path: [
           { lat: startLat, lng: startLng },
@@ -115,30 +124,44 @@ export async function GET(req: NextRequest) {
       };
     };
 
+    // T-map 도보 경로 조회 (실패 시 직선거리 fallback)
+    const getWalkingRoute = async (
+      startLat: number,
+      startLng: number,
+      endLat: number,
+      endLng: number
+    ): Promise<TransitRoute> => {
+      try {
+        return await getPedestrianRoute(
+          { lat: startLat, lng: startLng },
+          { lat: endLat, lng: endLng }
+        );
+      } catch (err) {
+        console.warn('T-map API 실패, 직선거리 fallback 사용:', err);
+        return estimateWalkingRouteFallback(startLat, startLng, endLat, endLng);
+      }
+    };
+
+    // 4개 시설에 대한 도보 경로 병렬 조회
+    const [subwayRoute, busStopRoute, martRoute, daycareRoute] = await Promise.all([
+      subwayStation ? getWalkingRoute(lat, lng, subwayStation.lat, subwayStation.lng) : null,
+      busStopStation ? getWalkingRoute(lat, lng, busStopStation.lat, busStopStation.lng) : null,
+      martStation ? getWalkingRoute(lat, lng, martStation.lat, martStation.lng) : null,
+      daycareStation ? getWalkingRoute(lat, lng, daycareStation.lat, daycareStation.lng) : null,
+    ]);
+
     const result: TransitData = {
-      subway: subwayStation
-        ? {
-            station: subwayStation,
-            route: estimateWalkingRoute(lat, lng, subwayStation.lat, subwayStation.lng),
-          }
+      subway: subwayStation && subwayRoute
+        ? { station: subwayStation, route: subwayRoute }
         : null,
-      busStop: busStopStation
-        ? {
-            station: busStopStation,
-            route: estimateWalkingRoute(lat, lng, busStopStation.lat, busStopStation.lng),
-          }
+      busStop: busStopStation && busStopRoute
+        ? { station: busStopStation, route: busStopRoute }
         : null,
-      mart: martStation
-        ? {
-            station: martStation,
-            route: estimateWalkingRoute(lat, lng, martStation.lat, martStation.lng),
-          }
+      mart: martStation && martRoute
+        ? { station: martStation, route: martRoute }
         : null,
-      daycare: daycareStation
-        ? {
-            station: daycareStation,
-            route: estimateWalkingRoute(lat, lng, daycareStation.lat, daycareStation.lng),
-          }
+      daycare: daycareStation && daycareRoute
+        ? { station: daycareStation, route: daycareRoute }
         : null,
     };
 

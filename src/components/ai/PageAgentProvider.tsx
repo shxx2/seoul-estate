@@ -36,7 +36,7 @@ export default function PageAgentProvider() {
       onLoad={() => {
         console.log("[PageAgent] Script loaded");
         // 스크립트 로드 후 초기화
-        const PageAgentClass = (window as Window & { PageAgent?: new (config: object) => object }).PageAgent;
+        const PageAgentClass = (window as Window & { PageAgent?: new (config: object) => { panel?: { show?: () => void } } }).PageAgent;
         if (PageAgentClass && apiKey) {
           const agent = new PageAgentClass({
             model: "gpt-4o-mini",
@@ -45,6 +45,12 @@ export default function PageAgentProvider() {
           });
           (window as Window & { pageAgent?: object }).pageAgent = agent;
           console.log("[PageAgent] Initialized successfully");
+
+          // Panel 명시적으로 표시
+          if (agent.panel && typeof agent.panel.show === "function") {
+            agent.panel.show();
+            console.log("[PageAgent] Panel shown");
+          }
         }
       }}
       onError={(e) => {

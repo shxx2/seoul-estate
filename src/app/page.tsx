@@ -6,14 +6,16 @@ import { useFilterStore } from "@/store/filterStore";
 import { useInfiniteArticles } from "@/hooks/useInfiniteArticles";
 import { useRegionPolygon } from "@/hooks/useRegionPolygon";
 import { getRegionCenter } from "@/lib/region-lookup";
+import { clusterArticles } from "@/lib/cluster-articles";
 import Header from "@/components/layout/Header";
 import Sidebar from "@/components/layout/Sidebar";
 import MobileBottomSheet from "@/components/layout/MobileBottomSheet";
 import NaverMap from "@/components/map/NaverMap";
 import RegionPolygon from "@/components/map/RegionPolygon";
-import ArticleMarker from "@/components/map/ArticleMarker";
+import ClusterMarker, { type ArticleCluster } from "@/components/map/ClusterMarker";
 import TransitRouteOverlay from "@/components/map/TransitRouteOverlay";
 import ArticleDetail from "@/components/article/ArticleDetail";
+import ClusterArticleList from "@/components/article/ClusterArticleList";
 import type { Article } from "@/types/article";
 import type { ArticleFilters } from "@/types/filter";
 
@@ -51,15 +53,44 @@ export default function Home() {
 
   // 선택된 매물
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+  // 선택된 클러스터 (여러 매물이 같은 위치에 있을 때)
+  const [selectedCluster, setSelectedCluster] = useState<ArticleCluster | null>(null);
 
-  // 매물 클릭 핸들러
+  // 매물을 클러스터로 그룹화
+  const clusters = useMemo(() => clusterArticles(articles), [articles]);
+
+  // 클러스터 클릭 핸들러
+  const handleClusterClick = useCallback((cluster: ArticleCluster) => {
+    if (cluster.articles.length === 1) {
+      // 단일 매물이면 바로 상세 보기
+      setSelectedArticle(cluster.articles[0]);
+      setSelectedCluster(null);
+    } else {
+      // 여러 매물이면 클러스터 목록 보기
+      setSelectedCluster(cluster);
+      setSelectedArticle(null);
+    }
+  }, []);
+
+  // 매물 클릭 핸들러 (목록 or 클러스터 목록에서)
   const handleArticleClick = useCallback((article: Article) => {
     setSelectedArticle(article);
+  }, []);
+
+  // 클러스터 목록으로 돌아가기
+  const handleBackToCluster = useCallback(() => {
+    setSelectedArticle(null);
   }, []);
 
   // 상세 패널 닫기
   const handleCloseDetail = useCallback(() => {
     setSelectedArticle(null);
+    setSelectedCluster(null);
+  }, []);
+
+  // 클러스터 목록 닫기
+  const handleCloseCluster = useCallback(() => {
+    setSelectedCluster(null);
   }, []);
 
   // 재시도
@@ -132,13 +163,16 @@ export default function Home() {
               <RegionPolygon paths={regionPolygonPaths} />
             )}
 
-            {/* 모든 매물 마커 */}
-            {articles.map((article) => (
-              <ArticleMarker
-                key={article.id}
-                article={article}
-                isSelected={selectedArticle?.id === article.id}
-                onClick={() => handleArticleClick(article)}
+            {/* 클러스터 마커 (같은 위치 매물 그룹화) */}
+            {clusters.map((cluster) => (
+              <ClusterMarker
+                key={cluster.key}
+                cluster={cluster}
+                isSelected={
+                  selectedCluster?.key === cluster.key ||
+                  cluster.articles.some((a) => a.id === selectedArticle?.id)
+                }
+                onClick={() => handleClusterClick(cluster)}
               />
             ))}
 
@@ -148,11 +182,21 @@ export default function Home() {
             )}
           </NaverMap>
 
+          {/* 클러스터 매물 목록 */}
+          {selectedCluster && selectedCluster.articles.length > 1 && !selectedArticle && (
+            <ClusterArticleList
+              cluster={selectedCluster}
+              onArticleClick={handleArticleClick}
+              onBack={handleCloseCluster}
+            />
+          )}
+
           {/* 매물 상세 슬라이드 패널 */}
           {selectedArticle && (
             <ArticleDetail
               article={selectedArticle}
               onClose={handleCloseDetail}
+              onBack={selectedCluster ? handleBackToCluster : undefined}
             />
           )}
         </div>

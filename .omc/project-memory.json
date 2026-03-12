@@ -157,8 +157,32 @@
   "hotPaths": [
     {
       "path": "src/components/filter/PriceRangeFilter.tsx",
-      "accessCount": 7,
-      "lastAccessed": 1773328439390,
+      "accessCount": 9,
+      "lastAccessed": 1773328904778,
+      "type": "file"
+    },
+    {
+      "path": "src/components/layout/MobileBottomSheet.tsx",
+      "accessCount": 5,
+      "lastAccessed": 1773328957791,
+      "type": "file"
+    },
+    {
+      "path": "src/components/article/ArticleDetail.tsx",
+      "accessCount": 5,
+      "lastAccessed": 1773329066835,
+      "type": "file"
+    },
+    {
+      "path": "src/app/page.tsx",
+      "accessCount": 5,
+      "lastAccessed": 1773329102405,
+      "type": "file"
+    },
+    {
+      "path": "src/components/article/ClusterArticleList.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1773329125812,
       "type": "file"
     },
     {
@@ -180,12 +204,6 @@
       "type": "directory"
     },
     {
-      "path": "src/components/layout/MobileBottomSheet.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1773328375131,
-      "type": "file"
-    },
-    {
       "path": "src/lib/constants.ts",
       "accessCount": 1,
       "lastAccessed": 1773328383941,
@@ -201,6 +219,24 @@
       "path": "src/components/filter/MobileRegionPicker.tsx",
       "accessCount": 1,
       "lastAccessed": 1773328393267,
+      "type": "file"
+    },
+    {
+      "path": "src/components/map/ArticleMarker.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1773328857535,
+      "type": "file"
+    },
+    {
+      "path": "src/components/map/ClusterMarker.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1773328994763,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/cluster-articles.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773329006383,
       "type": "file"
     }
   ],

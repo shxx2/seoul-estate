@@ -125,16 +125,16 @@ function RangeSlider({
         </div>
       </div>
 
-      {/* 듀얼 범위 슬라이더 */}
-      <div className="relative h-5 flex items-center">
-        {/* 트랙 배경 */}
-        <div className="absolute inset-x-0 h-1 bg-gray-200 rounded-full" />
+      {/* 듀얼 범위 슬라이더 - 모바일 최적화 */}
+      <div className="relative h-10 flex items-center touch-none">
+        {/* 트랙 배경 - 더 두껍게 */}
+        <div className="absolute inset-x-0 h-2 bg-gray-200 rounded-full" />
         {/* 활성 구간 */}
         <div
-          className="absolute h-1 bg-blue-500 rounded-full"
+          className="absolute h-2 bg-blue-500 rounded-full"
           style={{ left: `${minPct}%`, right: `${100 - maxPct}%` }}
         />
-        {/* Min 슬라이더 */}
+        {/* Min 슬라이더 - 큰 터치 타겟 */}
         <input
           type="range"
           min={min}
@@ -142,30 +142,32 @@ function RangeSlider({
           step={step}
           value={current[0]}
           onChange={handleMin}
-          className="absolute inset-x-0 w-full h-1 appearance-none bg-transparent cursor-pointer
+          className="absolute inset-x-0 w-full h-10 appearance-none bg-transparent cursor-pointer pointer-events-auto touch-pan-x
             [&::-webkit-slider-thumb]:appearance-none
-            [&::-webkit-slider-thumb]:w-4
-            [&::-webkit-slider-thumb]:h-4
+            [&::-webkit-slider-thumb]:w-7
+            [&::-webkit-slider-thumb]:h-7
             [&::-webkit-slider-thumb]:rounded-full
             [&::-webkit-slider-thumb]:bg-white
-            [&::-webkit-slider-thumb]:border-2
+            [&::-webkit-slider-thumb]:border-[3px]
             [&::-webkit-slider-thumb]:border-blue-500
-            [&::-webkit-slider-thumb]:shadow-sm
+            [&::-webkit-slider-thumb]:shadow-lg
             [&::-webkit-slider-thumb]:cursor-pointer
-            [&::-moz-range-thumb]:w-4
-            [&::-moz-range-thumb]:h-4
+            [&::-webkit-slider-thumb]:touch-action-pan-x
+            [&::-moz-range-thumb]:w-7
+            [&::-moz-range-thumb]:h-7
             [&::-moz-range-thumb]:rounded-full
             [&::-moz-range-thumb]:bg-white
-            [&::-moz-range-thumb]:border-2
+            [&::-moz-range-thumb]:border-[3px]
             [&::-moz-range-thumb]:border-blue-500
             [&::-moz-range-thumb]:cursor-pointer"
+          style={{ touchAction: "pan-x" }}
           aria-label={`${label} 최솟값`}
           aria-valuemin={min}
           aria-valuemax={max}
           aria-valuenow={current[0]}
           aria-valuetext={formatFn(current[0])}
         />
-        {/* Max 슬라이더 */}
+        {/* Max 슬라이더 - 큰 터치 타겟 */}
         <input
           type="range"
           min={min}
@@ -173,23 +175,25 @@ function RangeSlider({
           step={step}
           value={current[1]}
           onChange={handleMax}
-          className="absolute inset-x-0 w-full h-1 appearance-none bg-transparent cursor-pointer
+          className="absolute inset-x-0 w-full h-10 appearance-none bg-transparent cursor-pointer pointer-events-auto touch-pan-x
             [&::-webkit-slider-thumb]:appearance-none
-            [&::-webkit-slider-thumb]:w-4
-            [&::-webkit-slider-thumb]:h-4
+            [&::-webkit-slider-thumb]:w-7
+            [&::-webkit-slider-thumb]:h-7
             [&::-webkit-slider-thumb]:rounded-full
             [&::-webkit-slider-thumb]:bg-white
-            [&::-webkit-slider-thumb]:border-2
+            [&::-webkit-slider-thumb]:border-[3px]
             [&::-webkit-slider-thumb]:border-blue-500
-            [&::-webkit-slider-thumb]:shadow-sm
+            [&::-webkit-slider-thumb]:shadow-lg
             [&::-webkit-slider-thumb]:cursor-pointer
-            [&::-moz-range-thumb]:w-4
-            [&::-moz-range-thumb]:h-4
+            [&::-webkit-slider-thumb]:touch-action-pan-x
+            [&::-moz-range-thumb]:w-7
+            [&::-moz-range-thumb]:h-7
             [&::-moz-range-thumb]:rounded-full
             [&::-moz-range-thumb]:bg-white
-            [&::-moz-range-thumb]:border-2
+            [&::-moz-range-thumb]:border-[3px]
             [&::-moz-range-thumb]:border-blue-500
             [&::-moz-range-thumb]:cursor-pointer"
+          style={{ touchAction: "pan-x" }}
           aria-label={`${label} 최댓값`}
           aria-valuemin={min}
           aria-valuemax={max}

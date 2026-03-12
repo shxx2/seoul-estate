@@ -12,6 +12,7 @@ import React from "react";
 import Image from "next/image";
 import {
   X,
+  ArrowLeft,
   Building2,
   MapPin,
   Layers,
@@ -35,6 +36,8 @@ import { formatPrice, formatArea, parseFloorInfo } from "@/lib/format";
 export interface ArticleDetailProps {
   article: Article | null;
   onClose: () => void;
+  /** 클러스터에서 진입한 경우 뒤로가기 콜백 */
+  onBack?: () => void;
 }
 
 // ─────────────────────────────────────────────
@@ -85,7 +88,7 @@ function getPriceDisplay(article: Article): string {
 // 메인 컴포넌트
 // ─────────────────────────────────────────────
 
-export default function ArticleDetail({ article, onClose }: ArticleDetailProps) {
+export default function ArticleDetail({ article, onClose, onBack }: ArticleDetailProps) {
   const isOpen = article !== null;
 
   return (
@@ -111,7 +114,7 @@ export default function ArticleDetail({ article, onClose }: ArticleDetailProps) 
           isOpen ? "translate-x-0" : "translate-x-full",
         ].join(" ")}
       >
-        {article && <PanelContent article={article} onClose={onClose} />}
+        {article && <PanelContent article={article} onClose={onClose} onBack={onBack} />}
       </aside>
     </>
   );
@@ -124,9 +127,10 @@ export default function ArticleDetail({ article, onClose }: ArticleDetailProps) 
 interface PanelContentProps {
   article: Article;
   onClose: () => void;
+  onBack?: () => void;
 }
 
-function PanelContent({ article, onClose }: PanelContentProps) {
+function PanelContent({ article, onClose, onBack }: PanelContentProps) {
   const { floor } = parseFloorInfo(article.floor);
   const priceDisplay = getPriceDisplay(article);
 
@@ -135,6 +139,17 @@ function PanelContent({ article, onClose }: PanelContentProps) {
       {/* 헤더 */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 shrink-0">
         <div className="flex items-center gap-1.5">
+          {/* 뒤로가기 버튼 (클러스터에서 진입 시) */}
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              aria-label="목록으로 돌아가기"
+              className="p-1.5 -ml-1.5 mr-1 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+            >
+              <ArrowLeft size={16} aria-hidden="true" />
+            </button>
+          )}
           <span
             className={[
               "text-[10px] font-bold px-2 py-0.5 rounded",

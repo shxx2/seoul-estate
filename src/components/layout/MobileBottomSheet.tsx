@@ -11,7 +11,7 @@ import ArticleList from "@/components/article/ArticleList";
 import ArticleSkeleton from "@/components/article/ArticleSkeleton";
 import { ApiError } from "@/hooks/useArticles";
 
-type SheetState = "collapsed" | "half" | "full";
+type SheetState = "collapsed" | "peek" | "half" | "full";
 
 interface MobileBottomSheetProps {
   articles: Article[];
@@ -32,7 +32,7 @@ export default function MobileBottomSheet({
   onArticleClick,
   onRetry,
 }: MobileBottomSheetProps) {
-  const [state, setState] = useState<SheetState>("half");
+  const [state, setState] = useState<SheetState>("peek");
   const [showFilter, setShowFilter] = useState(false);
 
   const handleOpenFilter = () => {
@@ -42,6 +42,17 @@ export default function MobileBottomSheet({
 
   const handleCloseFilter = () => {
     setShowFilter(false);
+    setState("peek");
+  };
+
+  // 시트 접기 (지도 버튼 클릭 가능하게)
+  const handleCollapse = () => {
+    setState("collapsed");
+    setShowFilter(false);
+  };
+
+  // 시트 펼치기
+  const handleExpand = () => {
     setState("half");
   };
 
@@ -49,13 +60,14 @@ export default function MobileBottomSheet({
   const errorCode = error instanceof ApiError ? error.code : undefined;
 
   const heightMap: Record<SheetState, string> = {
-    collapsed: "h-16",
+    collapsed: "h-12",
+    peek: "h-24",
     half: "h-[50vh]",
     full: "h-[85vh]",
   };
 
   const toggleState = () => {
-    const order: SheetState[] = ["collapsed", "half", "full"];
+    const order: SheetState[] = ["collapsed", "peek", "half", "full"];
     const currentIndex = order.indexOf(state);
     const nextIndex = (currentIndex + 1) % order.length;
     setState(order[nextIndex]);
@@ -64,7 +76,9 @@ export default function MobileBottomSheet({
   const getToggleLabel = () => {
     switch (state) {
       case "collapsed":
-        return "바텀시트 펼치기";
+        return "바텀시트 살짝 보기";
+      case "peek":
+        return "바텀시트 절반 보기";
       case "half":
         return "바텀시트 전체 보기";
       case "full":
@@ -91,35 +105,63 @@ export default function MobileBottomSheet({
 
       {/* 헤더 */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-gray-100">
-        <span className="text-sm font-semibold text-gray-800">
-          매물 {total.toLocaleString()}개
-        </span>
         <div className="flex items-center gap-2">
+          {/* 접기/펴기 버튼 */}
           <button
             type="button"
-            onClick={showFilter ? handleCloseFilter : handleOpenFilter}
+            onClick={state === "collapsed" ? handleExpand : handleCollapse}
             className={[
-              "text-xs px-3 py-1.5 rounded-full transition-colors font-medium",
-              showFilter
+              "flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium transition-colors",
+              state === "collapsed"
                 ? "bg-[#03C75A] text-white"
                 : "bg-gray-100 text-gray-600 hover:bg-gray-200",
             ].join(" ")}
+            aria-label={state === "collapsed" ? "목록 펼치기" : "목록 접기"}
           >
-            {showFilter ? "목록 보기" : "필터"}
+            {state === "collapsed" ? (
+              <>
+                <ChevronUp size={14} />
+                <span>목록</span>
+              </>
+            ) : (
+              <>
+                <ChevronDown size={14} />
+                <span>접기</span>
+              </>
+            )}
           </button>
+          <span className="text-sm font-semibold text-gray-800">
+            매물 {total.toLocaleString()}개
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          {state !== "collapsed" && (
+            <button
+              type="button"
+              onClick={showFilter ? handleCloseFilter : handleOpenFilter}
+              className={[
+                "text-xs px-3 py-1.5 rounded-full transition-colors font-medium",
+                showFilter
+                  ? "bg-[#03C75A] text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200",
+              ].join(" ")}
+            >
+              {showFilter ? "목록 보기" : "필터"}
+            </button>
+          )}
           <button
             type="button"
             onClick={toggleState}
             className="p-1.5 text-gray-400 hover:text-gray-600"
-            aria-label={state === "full" ? "축소" : "확장"}
+            aria-label={getToggleLabel()}
           >
-            {state === "full" ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
+            {state === "full" || state === "half" ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
           </button>
         </div>
       </div>
 
       {/* 컨텐츠 */}
-      {state !== "collapsed" && (
+      {state !== "collapsed" && state !== "peek" && (
         <>
           {showFilter ? (
             <div className="flex-1 overflow-hidden">
@@ -142,6 +184,18 @@ export default function MobileBottomSheet({
             </div>
           )}
         </>
+      )}
+
+      {/* Peek 상태: 간략한 안내 */}
+      {state === "peek" && (
+        <div
+          className="flex-1 flex items-center justify-center cursor-pointer"
+          onClick={handleExpand}
+        >
+          <span className="text-xs text-gray-400">
+            탭하여 매물 목록 보기
+          </span>
+        </div>
       )}
     </div>
   );

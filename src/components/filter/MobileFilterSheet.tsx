@@ -175,6 +175,11 @@ export default function MobileFilterSheet({ onClose }: MobileFilterSheetProps) {
     submitSearch();
   };
 
+  const handleSearch = () => {
+    submitSearch();
+    onClose?.();
+  };
+
   // 탭별 뱃지 (선택 항목 수)
   const tradeBadge = tradeTypes.length < 3 ? tradeTypes.length : null;
   const buildingBadge = buildingTypes.length < 3 ? buildingTypes.length : null;
@@ -344,6 +349,27 @@ export default function MobileFilterSheet({ onClose }: MobileFilterSheetProps) {
             <AreaFilter />
           </div>
         )}
+      </div>
+
+      {/* 검색 버튼 - 고정 하단 */}
+      <div className="shrink-0 px-4 py-3 border-t border-gray-100 bg-white">
+        <button
+          type="button"
+          onClick={handleSearch}
+          disabled={!guCode}
+          className={[
+            "w-full py-3 rounded-xl text-[14px] font-bold transition-all duration-150",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#03C75A] focus-visible:ring-offset-2",
+            "active:scale-[0.98]",
+            guCode
+              ? "bg-[#03C75A] text-white shadow-md hover:bg-[#02b350]"
+              : "bg-gray-200 text-gray-400 cursor-not-allowed",
+          ]
+            .join(" ")
+            .trim()}
+        >
+          {guCode ? "검색하기" : "지역을 선택해주세요"}
+        </button>
       </div>
     </div>
   );

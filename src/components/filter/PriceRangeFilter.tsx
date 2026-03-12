@@ -56,6 +56,8 @@ interface RangeSliderProps {
   value: [number, number] | null;
   onChange: (range: [number, number] | null) => void;
   formatFn?: (v: number) => string;
+  /** 틱 마크 간격 (만원 단위, 예: 10000 = 1억) */
+  tickInterval?: number;
 }
 
 function RangeSlider({
@@ -66,6 +68,7 @@ function RangeSlider({
   value,
   onChange,
   formatFn = formatPrice,
+  tickInterval,
 }: RangeSliderProps) {
   const current = useMemo<[number, number]>(
     () => value ?? [min, max],
@@ -197,6 +200,32 @@ function RangeSlider({
         />
       </div>
 
+      {/* 틱 마크 (1억 단위) */}
+      {tickInterval && (
+        <div className="relative h-3 mt-1">
+          {Array.from({ length: Math.floor((max - min) / tickInterval) + 1 }, (_, i) => {
+            const tickValue = min + i * tickInterval;
+            const pct = ((tickValue - min) / (max - min)) * 100;
+            // 처음과 끝은 경계 레이블로 표시하므로 틱만 표시
+            const isEdge = tickValue === min || tickValue === max;
+            return (
+              <div
+                key={tickValue}
+                className="absolute flex flex-col items-center"
+                style={{ left: `${pct}%`, transform: "translateX(-50%)" }}
+              >
+                <div className="w-px h-1.5 bg-gray-300" />
+                {!isEdge && tickValue % (tickInterval * 5) === 0 && (
+                  <span className="text-[8px] text-gray-400 mt-0.5">
+                    {tickValue / 10000}억
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {/* 경계 레이블 */}
       <div className="flex justify-between text-[10px] text-gray-400">
         <span>{formatFn(min)}</span>
@@ -217,6 +246,8 @@ interface SectionConfig {
   field: PriceField;
   range: { min: number; max: number; step: number };
   formatFn?: (v: number) => string;
+  /** 틱 마크 간격 (만원 단위) */
+  tickInterval?: number;
 }
 
 interface TradeConfig {
@@ -230,6 +261,7 @@ const TRADE_CONFIG: Record<TradeType, TradeConfig> = {
         label: "매매가",
         field: "dealPriceRange",
         range: DEAL_PRICE_RANGE,
+        tickInterval: 10000, // 1억 단위 틱 마크
       },
     ],
   },
@@ -239,6 +271,7 @@ const TRADE_CONFIG: Record<TradeType, TradeConfig> = {
         label: "보증금",
         field: "depositRange",
         range: DEPOSIT_RANGE,
+        tickInterval: 10000, // 1억 단위 틱 마크
       },
     ],
   },
@@ -248,12 +281,14 @@ const TRADE_CONFIG: Record<TradeType, TradeConfig> = {
         label: "보증금",
         field: "depositRange",
         range: DEPOSIT_RANGE,
+        tickInterval: 10000, // 1억 단위 틱 마크
       },
       {
         label: "월세",
         field: "monthlyRentRange",
         range: MONTHLY_RENT_RANGE,
         formatFn: formatMonthly,
+        // 월세는 틱 마크 없음 (범위가 작음)
       },
     ],
   },
@@ -294,6 +329,7 @@ export default function PriceRangeFilter() {
           value={rangeValues[section.field]}
           onChange={(range) => setFilter(section.field, range)}
           formatFn={section.formatFn}
+          tickInterval={section.tickInterval}
         />
       ))}
     </div>

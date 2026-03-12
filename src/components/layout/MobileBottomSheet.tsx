@@ -6,7 +6,7 @@
 import React, { useState } from "react";
 import type { Article } from "@/types/article";
 import { ChevronUp, ChevronDown } from "lucide-react";
-import FilterPanel from "@/components/filter/FilterPanel";
+import MobileFilterSheet from "@/components/filter/MobileFilterSheet";
 import ArticleList from "@/components/article/ArticleList";
 import ArticleSkeleton from "@/components/article/ArticleSkeleton";
 import { ApiError } from "@/hooks/useArticles";
@@ -34,6 +34,16 @@ export default function MobileBottomSheet({
 }: MobileBottomSheetProps) {
   const [state, setState] = useState<SheetState>("half");
   const [showFilter, setShowFilter] = useState(false);
+
+  const handleOpenFilter = () => {
+    setShowFilter(true);
+    setState("full");
+  };
+
+  const handleCloseFilter = () => {
+    setShowFilter(false);
+    setState("half");
+  };
 
   const emptyState = error ? "error" : articles.length === 0 && !isLoading ? "empty" : "initial";
   const errorCode = error instanceof ApiError ? error.code : undefined;
@@ -87,11 +97,11 @@ export default function MobileBottomSheet({
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => setShowFilter(!showFilter)}
+            onClick={showFilter ? handleCloseFilter : handleOpenFilter}
             className={[
-              "text-xs px-3 py-1.5 rounded-full transition-colors",
+              "text-xs px-3 py-1.5 rounded-full transition-colors font-medium",
               showFilter
-                ? "bg-blue-100 text-blue-700"
+                ? "bg-[#03C75A] text-white"
                 : "bg-gray-100 text-gray-600 hover:bg-gray-200",
             ].join(" ")}
           >
@@ -110,22 +120,28 @@ export default function MobileBottomSheet({
 
       {/* 컨텐츠 */}
       {state !== "collapsed" && (
-        <div className="flex-1 overflow-y-auto p-4">
+        <>
           {showFilter ? (
-            <FilterPanel className="w-full" />
-          ) : isLoading ? (
-            <ArticleSkeleton count={3} />
+            <div className="flex-1 overflow-hidden">
+              <MobileFilterSheet onClose={handleCloseFilter} />
+            </div>
           ) : (
-            <ArticleList
-              articles={articles}
-              selectedId={selectedArticleId}
-              emptyState={emptyState}
-              errorCode={errorCode}
-              onArticleClick={onArticleClick}
-              onRetry={onRetry}
-            />
+            <div className="flex-1 overflow-y-auto p-4">
+              {isLoading ? (
+                <ArticleSkeleton count={3} />
+              ) : (
+                <ArticleList
+                  articles={articles}
+                  selectedId={selectedArticleId}
+                  emptyState={emptyState}
+                  errorCode={errorCode}
+                  onArticleClick={onArticleClick}
+                  onRetry={onRetry}
+                />
+              )}
+            </div>
           )}
-        </div>
+        </>
       )}
     </div>
   );

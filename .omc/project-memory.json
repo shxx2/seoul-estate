@@ -162,32 +162,32 @@
   "hotPaths": [
     {
       "path": "",
-      "accessCount": 27,
-      "lastAccessed": 1773324255968,
+      "accessCount": 28,
+      "lastAccessed": 1773324904820,
       "type": "directory"
     },
     {
       "path": "src",
-      "accessCount": 14,
-      "lastAccessed": 1773324580420,
+      "accessCount": 15,
+      "lastAccessed": 1773325238109,
       "type": "directory"
     },
     {
       "path": "src/app/api/articles/route.ts",
-      "accessCount": 11,
-      "lastAccessed": 1773324524196,
+      "accessCount": 12,
+      "lastAccessed": 1773326154571,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/naver/query-planner.ts",
+      "accessCount": 12,
+      "lastAccessed": 1773326163564,
       "type": "file"
     },
     {
       "path": "src/lib/naver/upstream-request.ts",
       "accessCount": 10,
       "lastAccessed": 1773324222516,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/naver/query-planner.ts",
-      "accessCount": 10,
-      "lastAccessed": 1773324508577,
       "type": "file"
     },
     {
@@ -203,21 +203,39 @@
       "type": "file"
     },
     {
+      "path": "src/app/page.tsx",
+      "accessCount": 9,
+      "lastAccessed": 1773326246145,
+      "type": "file"
+    },
+    {
       "path": "src/lib/naver/normalize-articles.ts",
       "accessCount": 7,
       "lastAccessed": 1773324499228,
       "type": "file"
     },
     {
-      "path": "src/lib/naver/diagnostics.ts",
-      "accessCount": 5,
-      "lastAccessed": 1773324218960,
+      "path": "src/components/filter/FilterPanel.tsx",
+      "accessCount": 7,
+      "lastAccessed": 1773325226738,
       "type": "file"
     },
     {
       "path": "src/lib/naver/endpoints.ts",
+      "accessCount": 6,
+      "lastAccessed": 1773325526096,
+      "type": "file"
+    },
+    {
+      "path": "src/components/layout/Sidebar.tsx",
+      "accessCount": 6,
+      "lastAccessed": 1773326218019,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/naver/diagnostics.ts",
       "accessCount": 5,
-      "lastAccessed": 1773324220511,
+      "lastAccessed": 1773324218960,
       "type": "file"
     },
     {
@@ -263,6 +281,18 @@
       "type": "directory"
     },
     {
+      "path": "src/store/filterStore.ts",
+      "accessCount": 4,
+      "lastAccessed": 1773324907859,
+      "type": "file"
+    },
+    {
+      "path": "src/types/filter.ts",
+      "accessCount": 4,
+      "lastAccessed": 1773324917458,
+      "type": "file"
+    },
+    {
       "path": "src/app/api/articles/[id]/route.ts",
       "accessCount": 3,
       "lastAccessed": 1773319681920,
@@ -293,9 +323,21 @@
       "type": "directory"
     },
     {
-      "path": "src/components/filter/FilterPanel.tsx",
+      "path": "src/components/filter/RegionSelect.tsx",
       "accessCount": 3,
-      "lastAccessed": 1773324642921,
+      "lastAccessed": 1773324902110,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/naver",
+      "accessCount": 3,
+      "lastAccessed": 1773325105989,
+      "type": "directory"
+    },
+    {
+      "path": "src/hooks/useArticles.ts",
+      "accessCount": 3,
+      "lastAccessed": 1773326147954,
       "type": "file"
     },
     {
@@ -323,27 +365,9 @@
       "type": "file"
     },
     {
-      "path": "src/hooks/useArticles.ts",
-      "accessCount": 2,
-      "lastAccessed": 1773324242035,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/naver",
-      "accessCount": 2,
-      "lastAccessed": 1773324251813,
-      "type": "directory"
-    },
-    {
       "path": "src/lib/naver/client.test.ts",
       "accessCount": 2,
       "lastAccessed": 1773324251984,
-      "type": "file"
-    },
-    {
-      "path": "src/types/filter.ts",
-      "accessCount": 2,
-      "lastAccessed": 1773324256286,
       "type": "file"
     },
     {
@@ -353,15 +377,21 @@
       "type": "file"
     },
     {
-      "path": "src/store/filterStore.ts",
+      "path": "src/components/filter/TradeTypeFilter.tsx",
       "accessCount": 2,
-      "lastAccessed": 1773324594443,
+      "lastAccessed": 1773324907237,
       "type": "file"
     },
     {
-      "path": "src/components/layout/Sidebar.tsx",
+      "path": "src/components/search/RegionSearch.tsx",
       "accessCount": 2,
-      "lastAccessed": 1773324747754,
+      "lastAccessed": 1773324910453,
+      "type": "file"
+    },
+    {
+      "path": "src/components/layout/Header.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1773324913033,
       "type": "file"
     },
     {
@@ -429,30 +459,6 @@
       "accessCount": 1,
       "lastAccessed": 1773324569999,
       "type": "directory"
-    },
-    {
-      "path": "src/components/search/RegionSearch.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1773324579368,
-      "type": "file"
-    },
-    {
-      "path": "src/app/page.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1773324579848,
-      "type": "file"
-    },
-    {
-      "path": "src/components/layout/Header.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1773324593887,
-      "type": "file"
-    },
-    {
-      "path": "src/components/filter/RegionSelect.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1773324628758,
-      "type": "file"
     }
   ],
   "userDirectives": []

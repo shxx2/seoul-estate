@@ -17,9 +17,9 @@ export interface ArticleFetchPlan {
   stopWhenEnoughFiltered: boolean;
 }
 
-// Edge Runtime 30초 제한에 맞춤 (Cloudflare 프록시로 안정화됨)
-const DEFAULT_MAX_PAGES = 5;
-const DEEP_CRAWL_MAX_PAGES = 10;
+// Cloudflare 프록시로 안정화됨 - 더 많은 페이지 크롤링 가능
+const DEFAULT_MAX_PAGES = 15;
+const DEEP_CRAWL_MAX_PAGES = 20;
 
 export function createArticleFetchPlan(params: ArticleFetchPlanParams): ArticleFetchPlan {
   const requiresPostFilter =

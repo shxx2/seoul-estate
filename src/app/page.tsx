@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useFilterStore } from "@/store/filterStore";
-import { useArticles } from "@/hooks/useArticles";
+import { useInfiniteArticles } from "@/hooks/useInfiniteArticles";
 import { useRegionPolygon } from "@/hooks/useRegionPolygon";
 import { getRegionCenter } from "@/lib/region-lookup";
 import Header from "@/components/layout/Header";
@@ -37,18 +37,17 @@ export default function Home() {
       refreshTrigger: s.refreshTrigger,
     }))
   );
-  const setPage = useFilterStore((s) => s.setPage);
-
-  // 매물 조회
+  // 매물 조회 (무한 스크롤)
   const {
     articles,
     total,
-    page,
-    pageSize,
+    hasMore,
     isLoading,
+    isLoadingMore,
     error,
+    loadMore,
     mutate,
-  } = useArticles(filters.appliedFilters, filters.refreshTrigger);
+  } = useInfiniteArticles(filters.appliedFilters, filters.refreshTrigger);
 
   // 선택된 매물
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
@@ -63,21 +62,10 @@ export default function Home() {
     setSelectedArticle(null);
   }, []);
 
-  // 페이지 변경 (페이지 변경 시 검색 트리거)
-  const handlePageChange = useCallback(
-    (newPage: number) => {
-      setPage(newPage);
-    },
-    [setPage]
-  );
-
   // 재시도
   const handleRetry = useCallback(() => {
     mutate();
   }, [mutate]);
-
-  // totalPages 계산
-  const totalPages = useMemo(() => Math.ceil(total / pageSize), [total, pageSize]);
 
   const activeFilters: Pick<ArticleFilters, "guCode" | "dongCode"> =
     filters.appliedFilters ?? {
@@ -125,14 +113,13 @@ export default function Home() {
           <Sidebar
             articles={articles}
             total={total}
-            page={page}
-            pageSize={pageSize}
-            totalPages={totalPages}
             isLoading={isLoading}
+            isLoadingMore={isLoadingMore}
+            hasMore={hasMore}
             error={error}
             selectedArticleId={selectedArticle?.id ?? null}
             onArticleClick={handleArticleClick}
-            onPageChange={handlePageChange}
+            onLoadMore={loadMore}
             onRetry={handleRetry}
           />
         </div>

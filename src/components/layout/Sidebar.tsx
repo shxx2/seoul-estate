@@ -2,48 +2,46 @@
 /**
  * Sidebar - 좌측 사이드바
  * FilterPanel과 ArticleList를 포함하는 컨테이너
+ * 무한 스크롤 지원
  */
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import type { Article } from "@/types/article";
 import FilterPanel from "@/components/filter/FilterPanel";
 import ArticleList from "@/components/article/ArticleList";
 import ArticleSkeleton from "@/components/article/ArticleSkeleton";
-import Pagination from "@/components/common/Pagination";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { ApiError } from "@/hooks/useArticles";
-
-// 안정적인 no-op 함수 (매 렌더 시 새 함수 생성 방지)
-const noop = () => {};
 
 interface SidebarProps {
   articles: Article[];
   total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
   isLoading: boolean;
+  isLoadingMore?: boolean;
+  hasMore?: boolean;
   error?: Error | null;
   selectedArticleId?: string | null;
   onArticleClick?: (article: Article) => void;
-  onPageChange?: (page: number) => void;
+  onLoadMore?: () => void;
   onRetry?: () => void;
 }
 
 export default function Sidebar({
   articles,
   total,
-  page,
-  totalPages,
   isLoading,
+  isLoadingMore,
+  hasMore,
   error,
   selectedArticleId,
   onArticleClick,
-  onPageChange,
+  onLoadMore,
   onRetry,
 }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [filterCollapsed, setFilterCollapsed] = useState(false);
   const prevIsLoading = useRef(isLoading);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
 
   // 검색 시작(isLoading true로 전환) 시 필터 자동 접기
   useEffect(() => {
@@ -52,6 +50,24 @@ export default function Sidebar({
     }
     prevIsLoading.current = isLoading;
   }, [isLoading]);
+
+  // Intersection Observer로 무한 스크롤 구현
+  useEffect(() => {
+    const trigger = loadMoreTriggerRef.current;
+    if (!trigger || !onLoadMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoadingMore && !isLoading) {
+          onLoadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(trigger);
+    return () => observer.disconnect();
+  }, [hasMore, isLoadingMore, isLoading, onLoadMore]);
 
   const emptyState = error ? "error" : articles.length === 0 && !isLoading ? "empty" : "initial";
   const errorCode = error instanceof ApiError ? error.code : undefined;
@@ -88,36 +104,52 @@ export default function Sidebar({
             <FilterPanel collapsed={filterCollapsed} />
           </div>
 
-          {/* 매물 목록 */}
-          <div className="flex-1 overflow-y-auto p-3">
+          {/* 매물 목록 (무한 스크롤) */}
+          <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-3">
             <div className="mb-2 text-xs text-gray-500">
               총 <span className="font-semibold text-gray-700">{total.toLocaleString()}</span>개 매물
+              {articles.length > 0 && articles.length < total && (
+                <span className="text-gray-400"> (현재 {articles.length}개 표시)</span>
+              )}
             </div>
 
             {isLoading ? (
               <ArticleSkeleton count={5} />
             ) : (
-              <ArticleList
-                articles={articles}
-                selectedId={selectedArticleId}
-                emptyState={emptyState}
-                errorCode={errorCode}
-                onArticleClick={onArticleClick}
-                onRetry={onRetry}
-              />
+              <>
+                <ArticleList
+                  articles={articles}
+                  selectedId={selectedArticleId}
+                  emptyState={emptyState}
+                  errorCode={errorCode}
+                  onArticleClick={onArticleClick}
+                  onRetry={onRetry}
+                />
+
+                {/* 무한 스크롤 트리거 & 로딩 표시 */}
+                {articles.length > 0 && (
+                  <div ref={loadMoreTriggerRef} className="py-4 flex justify-center">
+                    {isLoadingMore ? (
+                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <Loader2 size={16} className="animate-spin" />
+                        <span>더 불러오는 중...</span>
+                      </div>
+                    ) : hasMore ? (
+                      <button
+                        type="button"
+                        onClick={onLoadMore}
+                        className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                      >
+                        더 보기
+                      </button>
+                    ) : (
+                      <span className="text-xs text-gray-400">모든 매물을 불러왔습니다</span>
+                    )}
+                  </div>
+                )}
+              </>
             )}
           </div>
-
-          {/* 페이지네이션 */}
-          {totalPages > 1 && !isLoading && (
-            <div className="p-3 border-t border-gray-200 bg-white">
-              <Pagination
-                currentPage={page}
-                totalPages={totalPages}
-                onPageChange={onPageChange || noop}
-              />
-            </div>
-          )}
         </>
       )}
     </aside>

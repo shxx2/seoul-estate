@@ -18,29 +18,16 @@ export default function PageAgentProvider() {
     }
   }, [apiKey]);
 
-  // 데모 스크립트 로드 (UI 포함) - 나중에 API 키로 재설정
+  // 데모 스크립트 로드 (UI 포함) - crossorigin 필수
+  // 문서: https://github.com/alibaba/page-agent
   return (
     <>
       <Script
         src="https://cdn.jsdelivr.net/npm/page-agent@1.5.6/dist/iife/page-agent.demo.js"
-        strategy="lazyOnload"
+        strategy="afterInteractive"
+        crossOrigin="anonymous"
         onLoad={() => {
-          console.log("[PageAgent] Demo script loaded");
-
-          // 자체 API 키가 있으면 재설정
-          if (apiKey) {
-            setTimeout(() => {
-              const win = window as Window & { pageAgent?: { setConfig?: (config: object) => void } };
-              if (win.pageAgent?.setConfig) {
-                win.pageAgent.setConfig({
-                  model: "gpt-4o-mini",
-                  baseURL: "https://api.openai.com/v1",
-                  apiKey,
-                });
-                console.log("[PageAgent] Reconfigured with custom API key");
-              }
-            }, 1000);
-          }
+          console.log("[PageAgent] Demo script loaded successfully");
         }}
         onError={(e) => {
           console.error("[PageAgent] Failed to load demo script:", e);

@@ -24,18 +24,28 @@ export default function ArticleMarker({ article, isSelected, onClick }: ArticleM
   if (!article) return null;
 
   const priceText = article.priceText || formatPrice(article.dealPrice ?? article.deposit ?? 0);
+  const articleName = article.articleName || "";
+  const dongName = article.dong || "";
 
   // 선택된 마커는 더 크고 눈에 띄는 스타일
-  const markerStyle = isSelected
-    ? "bg-blue-700 text-white text-sm font-bold px-3 py-1.5 rounded-lg shadow-xl cursor-pointer ring-2 ring-white ring-offset-2 ring-offset-blue-700 scale-110"
-    : "bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded shadow-lg cursor-pointer hover:bg-blue-700 hover:scale-105 transition-transform";
+  const markerContent = isSelected
+    ? `<div class="bg-blue-700 text-white rounded-lg shadow-xl cursor-pointer ring-2 ring-white ring-offset-2 ring-offset-blue-700 scale-110 min-w-[80px] text-center">
+        <div class="px-2 py-1 text-[10px] text-blue-200 border-b border-blue-600">${dongName}</div>
+        <div class="px-2 py-0.5 text-xs font-medium truncate max-w-[120px]">${articleName}</div>
+        <div class="px-2 py-1 text-sm font-bold">${priceText}</div>
+      </div>`
+    : `<div class="bg-blue-600 text-white rounded shadow-lg cursor-pointer hover:bg-blue-700 hover:scale-105 transition-transform min-w-[60px] text-center">
+        <div class="px-1.5 py-0.5 text-[9px] text-blue-200 border-b border-blue-500">${dongName}</div>
+        <div class="px-1.5 py-0.5 text-[10px] truncate max-w-[100px]">${articleName}</div>
+        <div class="px-1.5 py-0.5 text-xs font-semibold">${priceText}</div>
+      </div>`;
 
   return (
     <Marker
       position={new navermaps.LatLng(article.lat, article.lng)}
       icon={{
-        content: `<div class="${markerStyle}">${priceText}</div>`,
-        anchor: new navermaps.Point(30, 40),
+        content: markerContent,
+        anchor: new navermaps.Point(40, 60),
       }}
       onClick={onClick}
       zIndex={isSelected ? 1000 : 1}

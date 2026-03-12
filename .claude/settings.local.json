@@ -1,6 +1,11 @@
 {
   "permissions": {
     "allow": [
+      "Bash(*)",
+      "Read(*)",
+      "Write(*)",
+      "Edit(*)",
+      "WebFetch(*)",
       "WebSearch",
       "mcp__plugin_oh-my-claudecode_t__state_write",
       "Bash(pnpm create:*)",
@@ -23,7 +28,16 @@
       "WebFetch(domain:www.npmjs.com)",
       "WebFetch(domain:zeakd.github.io)",
       "Bash(npm view:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "mcp__plugin_oh-my-claudecode_t__state_read",
+      "mcp__plugin_oh-my-claudecode_t__state_clear",
+      "mcp__plugin_oh-my-claudecode_team__omc_run_team_start",
+      "mcp__plugin_oh-my-claudecode_team__omc_run_team_wait",
+      "mcp__plugin_oh-my-claudecode_team__omc_run_team_cleanup",
+      "mcp__plugin_oh-my-claudecode_t__python_repl"
     ]
+  },
+  "enabledPlugins": {
+    "playwright@claude-plugins-official": true
   }
 }

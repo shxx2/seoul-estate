@@ -1,18 +1,4 @@
-import http from "node:http";
-import https from "node:https";
-
-// HTTP Keep-Alive 에이전트 (연결 재사용으로 TLS 핸드셰이크 오버헤드 감소)
-const httpsAgent = new https.Agent({
-  keepAlive: true,
-  maxSockets: 4,
-  timeout: 5000,
-});
-
-const httpAgent = new http.Agent({
-  keepAlive: true,
-  maxSockets: 4,
-  timeout: 5000,
-});
+// Edge Runtime 호환 - fetch API 사용
 
 export interface UpstreamTextRequestOptions {
   headers?: Record<string, string>;
@@ -29,70 +15,29 @@ export async function requestUpstreamText(
   url: string,
   options: UpstreamTextRequestOptions
 ): Promise<UpstreamTextResponse> {
-  const targetUrl = new URL(url);
-  const transport = targetUrl.protocol === "https:" ? https : http;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), options.timeoutMs);
 
-  return new Promise<UpstreamTextResponse>((resolve, reject) => {
-    let settled = false;
-    let timeoutError: Error | null = null;
-
-    const agent = targetUrl.protocol === "https:" ? httpsAgent : httpAgent;
-
-    const req = transport.request(
-      targetUrl,
-      {
-        method: "GET",
-        agent,
-        headers: {
-          ...options.headers,
-        },
-      },
-      (res) => {
-        let text = "";
-        res.setEncoding("utf8");
-
-        res.on("data", (chunk) => {
-          text += chunk;
-        });
-
-        res.on("end", () => {
-          if (settled) {
-            return;
-          }
-          settled = true;
-          clearTimeout(timeoutId);
-          resolve({
-            status: res.statusCode ?? 0,
-            statusText: res.statusMessage ?? "",
-            text,
-          });
-        });
-
-        res.on("error", (error) => {
-          if (settled) {
-            return;
-          }
-          settled = true;
-          clearTimeout(timeoutId);
-          reject(error);
-        });
-      }
-    );
-
-    const timeoutId = setTimeout(() => {
-      timeoutError = new Error(`Request timeout after ${options.timeoutMs}ms`);
-      req.destroy(timeoutError);
-    }, options.timeoutMs);
-
-    req.on("error", (error) => {
-      if (settled) {
-        return;
-      }
-      settled = true;
-      clearTimeout(timeoutId);
-      reject(timeoutError ?? error);
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: options.headers,
+      signal: controller.signal,
     });
 
-    req.end();
-  });
+    const text = await response.text();
+
+    return {
+      status: response.status,
+      statusText: response.statusText,
+      text,
+    };
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new Error(`Request timeout after ${options.timeoutMs}ms`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }

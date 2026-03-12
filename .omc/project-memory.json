@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1772787327408,
+  "lastScanned": 1773241255464,
   "projectRoot": "/Users/sehyunshin/play/estate",
   "techStack": {
     "languages": [
@@ -51,7 +51,8 @@
       "build": "next build",
       "start": "next start",
       "lint": "next lint",
-      "fetch-regions": "tsx scripts/fetch-regions.ts"
+      "fetch-regions": "tsx scripts/fetch-regions.ts",
+      "debug:naver-articles": "tsx scripts/debug-naver-articles.ts"
     }
   },
   "conventions": {
@@ -64,6 +65,7 @@
     "isMonorepo": false,
     "workspaces": [],
     "mainDirectories": [
+      "docs",
       "public",
       "scripts",
       "src"
@@ -72,19 +74,27 @@
   },
   "customNotes": [],
   "directoryMap": {
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 0,
+      "lastAccessed": 1773241255450,
+      "keyFiles": []
+    },
     "public": {
       "path": "public",
       "purpose": "Public files",
       "fileCount": 0,
-      "lastAccessed": 1772787327393,
+      "lastAccessed": 1773241255450,
       "keyFiles": []
     },
     "scripts": {
       "path": "scripts",
       "purpose": "Build/utility scripts",
-      "fileCount": 2,
-      "lastAccessed": 1772787327393,
+      "fileCount": 3,
+      "lastAccessed": 1773241255455,
       "keyFiles": [
+        "debug-naver-articles.ts",
         "fetch-regions.ts",
         "prepare-geojson.ts"
       ]
@@ -93,7 +103,7 @@
       "path": "src",
       "purpose": "Source code",
       "fileCount": 1,
-      "lastAccessed": 1772787327394,
+      "lastAccessed": 1773241255455,
       "keyFiles": [
         "AGENTS.md"
       ]
@@ -102,7 +112,7 @@
       "path": "public/data",
       "purpose": "Data files",
       "fileCount": 2,
-      "lastAccessed": 1772787327398,
+      "lastAccessed": 1773241255456,
       "keyFiles": [
         "seoul-districts.json",
         "seoul-gu-boundaries.json"
@@ -112,7 +122,7 @@
       "path": "src/app",
       "purpose": "Application code",
       "fileCount": 6,
-      "lastAccessed": 1772787327399,
+      "lastAccessed": 1773241255456,
       "keyFiles": [
         "error.tsx",
         "favicon.ico",
@@ -123,14 +133,14 @@
       "path": "src/components",
       "purpose": "UI components",
       "fileCount": 0,
-      "lastAccessed": 1772787327399,
+      "lastAccessed": 1773241255456,
       "keyFiles": []
     },
     "src/lib": {
       "path": "src/lib",
       "purpose": "Library code",
       "fileCount": 6,
-      "lastAccessed": 1772787327399,
+      "lastAccessed": 1773241255456,
       "keyFiles": [
         "api-response.ts",
         "constants.ts",
@@ -141,7 +151,7 @@
       "path": "src/types",
       "purpose": "Type definitions",
       "fileCount": 4,
-      "lastAccessed": 1772787327399,
+      "lastAccessed": 1773241255456,
       "keyFiles": [
         "article.ts",
         "filter.ts",
@@ -151,280 +161,166 @@
   },
   "hotPaths": [
     {
-      "path": "src/app/api/articles/route.ts",
-      "accessCount": 22,
-      "lastAccessed": 1772808921081,
-      "type": "file"
-    },
-    {
       "path": "",
-      "accessCount": 21,
-      "lastAccessed": 1772808086924,
+      "accessCount": 14,
+      "lastAccessed": 1773319697546,
       "type": "directory"
     },
     {
-      "path": "src/lib/naver/client.ts",
-      "accessCount": 18,
-      "lastAccessed": 1772808674732,
+      "path": "src/lib/naver/upstream-request.ts",
+      "accessCount": 7,
+      "lastAccessed": 1773320437417,
       "type": "file"
     },
     {
-      "path": "src/components/map/NaverMap.tsx",
-      "accessCount": 8,
-      "lastAccessed": 1772805291986,
+      "path": "src/lib/naver/client.ts",
+      "accessCount": 6,
+      "lastAccessed": 1773320453308,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/naver/query-planner.ts",
+      "accessCount": 6,
+      "lastAccessed": 1773320454873,
       "type": "file"
     },
     {
       "path": "src",
-      "accessCount": 8,
-      "lastAccessed": 1772808600252,
+      "accessCount": 5,
+      "lastAccessed": 1773319703195,
       "type": "directory"
     },
     {
-      "path": "src/components/map/NaverMapProvider.tsx",
-      "accessCount": 7,
-      "lastAccessed": 1772791254364,
-      "type": "file"
-    },
-    {
-      "path": "src/app/api/transit/route.ts",
-      "accessCount": 6,
-      "lastAccessed": 1772788092222,
-      "type": "file"
-    },
-    {
-      "path": "src/app/page.tsx",
-      "accessCount": 6,
-      "lastAccessed": 1772808089226,
-      "type": "file"
-    },
-    {
-      "path": "src/components/search/RegionSearch.tsx",
-      "accessCount": 6,
-      "lastAccessed": 1772808126639,
-      "type": "file"
-    },
-    {
-      "path": "src/store/filterStore.ts",
+      "path": "src/lib/naver/page-batch-recovery.ts",
       "accessCount": 5,
-      "lastAccessed": 1772808092160,
+      "lastAccessed": 1773320001279,
       "type": "file"
     },
     {
-      "path": "src/hooks/useArticles.ts",
+      "path": "src/app/api/articles/route.ts",
       "accessCount": 5,
-      "lastAccessed": 1772808172538,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/region-lookup.ts",
-      "accessCount": 5,
-      "lastAccessed": 1772808628191,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/naver/endpoints.ts",
-      "accessCount": 5,
-      "lastAccessed": 1772808675241,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/cache/server-cache.ts",
-      "accessCount": 5,
-      "lastAccessed": 1772808860317,
-      "type": "file"
-    },
-    {
-      "path": "src/components/map/TransitRouteOverlay.tsx",
-      "accessCount": 4,
-      "lastAccessed": 1772788142948,
-      "type": "file"
-    },
-    {
-      "path": "src/types/filter.ts",
-      "accessCount": 4,
-      "lastAccessed": 1772808099371,
-      "type": "file"
-    },
-    {
-      "path": "src/components/layout/Sidebar.tsx",
-      "accessCount": 4,
-      "lastAccessed": 1772808106565,
-      "type": "file"
-    },
-    {
-      "path": ".env.local",
-      "accessCount": 4,
-      "lastAccessed": 1772808631708,
-      "type": "file"
-    },
-    {
-      "path": ".env.local.example",
-      "accessCount": 3,
-      "lastAccessed": 1772787364809,
-      "type": "file"
-    },
-    {
-      "path": "package.json",
-      "accessCount": 3,
-      "lastAccessed": 1772787375559,
-      "type": "file"
-    },
-    {
-      "path": "src/app/layout.tsx",
-      "accessCount": 3,
-      "lastAccessed": 1772787413738,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/kakao/local.ts",
-      "accessCount": 3,
-      "lastAccessed": 1772788068284,
-      "type": "file"
-    },
-    {
-      "path": "src/hooks/useTransitRoute.ts",
-      "accessCount": 3,
-      "lastAccessed": 1772788105146,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/api-response.ts",
-      "accessCount": 3,
-      "lastAccessed": 1772808165370,
+      "lastAccessed": 1773320449023,
       "type": "file"
     },
     {
       "path": "src/app/api/articles/[id]/route.ts",
       "accessCount": 3,
-      "lastAccessed": 1772808632569,
+      "lastAccessed": 1773319681920,
+      "type": "file"
+    },
+    {
+      "path": "vercel.json",
+      "accessCount": 3,
+      "lastAccessed": 1773319682409,
       "type": "file"
     },
     {
       "path": "next.config.mjs",
-      "accessCount": 2,
-      "lastAccessed": 1772787379384,
+      "accessCount": 3,
+      "lastAccessed": 1773319682430,
       "type": "file"
     },
     {
-      "path": "src/types/transit.ts",
-      "accessCount": 2,
-      "lastAccessed": 1772788050233,
+      "path": "src/app/api/transit/route.ts",
+      "accessCount": 3,
+      "lastAccessed": 1773319682776,
       "type": "file"
     },
     {
-      "path": "src/types/article.ts",
-      "accessCount": 2,
-      "lastAccessed": 1772807521393,
+      "path": "src/lib/naver/cache.ts",
+      "accessCount": 3,
+      "lastAccessed": 1773319693548,
       "type": "file"
     },
     {
-      "path": "src/components/layout/Header.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1772808087013,
+      "path": "src/lib/cache/server-cache.ts",
+      "accessCount": 3,
+      "lastAccessed": 1773319696095,
       "type": "file"
     },
     {
-      "path": "src/components/filter/FilterPanel.tsx",
+      "path": "src/lib/naver/endpoints.ts",
       "accessCount": 2,
-      "lastAccessed": 1772808108990,
+      "lastAccessed": 1773319680838,
       "type": "file"
     },
     {
-      "path": "src/lib/naver/transform.ts",
+      "path": "src/app/api/regions/route.ts",
       "accessCount": 2,
-      "lastAccessed": 1772808159553,
+      "lastAccessed": 1773319682442,
       "type": "file"
     },
     {
-      "path": "src/lib/naver/types.ts",
+      "path": "src/lib/naver/diagnostics.ts",
       "accessCount": 2,
-      "lastAccessed": 1772808165278,
+      "lastAccessed": 1773319688663,
       "type": "file"
     },
     {
       "path": "src/lib/constants.ts",
-      "accessCount": 1,
-      "lastAccessed": 1772787649085,
+      "accessCount": 2,
+      "lastAccessed": 1773319707427,
+      "type": "directory"
+    },
+    {
+      "path": "src/lib/naver/normalize-articles.ts",
+      "accessCount": 2,
+      "lastAccessed": 1773319707766,
       "type": "file"
     },
     {
-      "path": "src/lib/format.ts",
+      "path": "src/lib/naver/types.ts",
       "accessCount": 1,
-      "lastAccessed": 1772787663205,
+      "lastAccessed": 1773319674492,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/naver/transform.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773319674974,
+      "type": "file"
+    },
+    {
+      "path": "src/hooks/useArticles.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773319686670,
       "type": "file"
     },
     {
       "path": "src/hooks/useArticleDetail.ts",
       "accessCount": 1,
-      "lastAccessed": 1772787668928,
+      "lastAccessed": 1773319687286,
       "type": "file"
     },
     {
-      "path": "src/components/article/ArticleDetail.tsx",
+      "path": "src/hooks/articles-page-cache.ts",
       "accessCount": 1,
-      "lastAccessed": 1772787669411,
+      "lastAccessed": 1773319688737,
       "type": "file"
     },
     {
-      "path": "src/lib/tmap/pedestrian.ts",
+      "path": "package.json",
       "accessCount": 1,
-      "lastAccessed": 1772787669852,
+      "lastAccessed": 1773319689022,
       "type": "file"
     },
     {
-      "path": "src/AGENTS.md",
+      "path": "src/hooks",
       "accessCount": 1,
-      "lastAccessed": 1772787675626,
+      "lastAccessed": 1773319695133,
+      "type": "directory"
+    },
+    {
+      "path": "src/lib/articles/query.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773319696558,
       "type": "file"
     },
     {
-      "path": "tsconfig.json",
+      "path": "src/app/api",
       "accessCount": 1,
-      "lastAccessed": 1772787676520,
-      "type": "file"
-    },
-    {
-      "path": "src/hooks/useRegionPolygon.ts",
-      "accessCount": 1,
-      "lastAccessed": 1772790429395,
-      "type": "file"
-    },
-    {
-      "path": "src/components/map/RegionPolygon.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1772791218164,
-      "type": "file"
-    },
-    {
-      "path": "src/components/map/ArticleMarker.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1772791218316,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/region-codes.ts",
-      "accessCount": 1,
-      "lastAccessed": 1772808086056,
-      "type": "file"
-    },
-    {
-      "path": "src/types/region.ts",
-      "accessCount": 1,
-      "lastAccessed": 1772808086521,
-      "type": "file"
-    },
-    {
-      "path": "src/components/article/ArticleList.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1772808095320,
-      "type": "file"
-    },
-    {
-      "path": "vercel.json",
-      "accessCount": 1,
-      "lastAccessed": 1772808931737,
-      "type": "file"
+      "lastAccessed": 1773319702636,
+      "type": "directory"
     }
   ],
   "userDirectives": []

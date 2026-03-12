@@ -27,8 +27,9 @@ import {
 } from '@/lib/articles/query';
 import type { Article, TradeType, BuildingType } from '@/types/article';
 
-// Node.js Runtime 사용 - Vercel Seoul 리전(icn1)에서 실행
-export const maxDuration = 180;
+// Edge Runtime 사용 - Hobby 플랜에서도 30초 타임아웃
+export const runtime = 'edge';
+export const preferredRegion = 'icn1';
 
 // guCode를 구 이름으로 매핑 (서울 25개 구 전체)
 const guCodeToName: Record<string, string> = {

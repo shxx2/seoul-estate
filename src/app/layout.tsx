@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { NaverMapProvider } from "@/components/map/NaverMapProvider";
+import PageAgentProvider from "@/components/ai/PageAgentProvider";
 
 export const metadata: Metadata = {
   title: "심바네 똘똘한 한채 - 서울 지역 매물 검색",
@@ -24,6 +25,7 @@ export default function RootLayout({
       <body className="antialiased bg-gray-50 text-gray-900">
         <NaverMapProvider>
           {children}
+          <PageAgentProvider />
         </NaverMapProvider>
       </body>
     </html>

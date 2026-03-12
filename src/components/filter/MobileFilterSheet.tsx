@@ -15,6 +15,8 @@ import { useFilterStore } from "@/store/filterStore";
 import { TRADE_TYPE_LABEL, BUILDING_TYPE_LABEL } from "@/lib/constants";
 import type { TradeType, BuildingType } from "@/types/article";
 import MobileRegionPicker from "./MobileRegionPicker";
+import PriceRangeFilter from "./PriceRangeFilter";
+import AreaFilter from "./AreaFilter";
 import seoulDistricts from "../../../public/data/seoul-districts.json";
 import { useMemo } from "react";
 
@@ -22,12 +24,14 @@ import { useMemo } from "react";
 // 탭 정의
 // ─────────────────────────────────────────────
 
-type FilterTab = "region" | "trade" | "building";
+type FilterTab = "region" | "trade" | "building" | "price" | "area";
 
 const TABS: { id: FilterTab; label: string }[] = [
   { id: "region", label: "지역" },
   { id: "trade", label: "거래유형" },
   { id: "building", label: "건물유형" },
+  { id: "price", label: "금액" },
+  { id: "area", label: "평수" },
 ];
 
 const TRADE_TYPES: TradeType[] = ["SALE", "JEONSE", "MONTHLY"];
@@ -310,6 +314,34 @@ export default function MobileFilterSheet({ onClose }: MobileFilterSheetProps) {
             className="h-full overflow-y-auto"
           >
             <BuildingTypePanel />
+          </div>
+        )}
+
+        {activeTab === "price" && (
+          <div
+            id="filter-panel-price"
+            role="tabpanel"
+            aria-label="금액 범위 선택"
+            className="h-full overflow-y-auto p-4"
+          >
+            <p className="text-[11px] text-gray-400 mb-4 tracking-wide uppercase font-medium">
+              거래유형에 따라 표시가 달라집니다
+            </p>
+            <PriceRangeFilter />
+          </div>
+        )}
+
+        {activeTab === "area" && (
+          <div
+            id="filter-panel-area"
+            role="tabpanel"
+            aria-label="평수 범위 선택"
+            className="h-full overflow-y-auto p-4"
+          >
+            <p className="text-[11px] text-gray-400 mb-4 tracking-wide uppercase font-medium">
+              전용면적 기준
+            </p>
+            <AreaFilter />
           </div>
         )}
       </div>

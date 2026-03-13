@@ -21,16 +21,19 @@ export interface BoundsParams {
  * 금천구(1154500000) 에서 오분류 버그 발생.
  */
 export function cortarNoToBounds(cortarNo: string): BoundsParams | null {
+  // 구 단위 좌표 범위 마진 (경계 매물 누락 방지)
+  const GU_BOUNDS_MARGIN = 0.005; // 약 550m 확장
+
   // 구 단위: districts 배열에서 직접 조회
   const district = seoulDistricts.districts.find(d => d.cortarNo === cortarNo);
   if (district) {
     return {
       lat: district.lat,
       lon: district.lng,
-      btm: district.bounds.sw[0],
-      lft: district.bounds.sw[1],
-      top: district.bounds.ne[0],
-      rgt: district.bounds.ne[1],
+      btm: district.bounds.sw[0] - GU_BOUNDS_MARGIN,
+      lft: district.bounds.sw[1] - GU_BOUNDS_MARGIN,
+      top: district.bounds.ne[0] + GU_BOUNDS_MARGIN,
+      rgt: district.bounds.ne[1] + GU_BOUNDS_MARGIN,
       z: 15, // 구 단위 줌 레벨 (15로 높여서 정확도 향상)
     };
   }

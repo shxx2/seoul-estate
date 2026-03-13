@@ -478,6 +478,14 @@ export async function GET(req: NextRequest) {
               fetchPlan,
               naver: fetchDiagnostics,
               normalization: normalized.stats,
+              dualApi: {
+                clusterCount: clusterArticles.length,
+                complexCount: complexTransformed.length,
+                complexesQueried: complexCount,
+                mergedCount: mergedArticles.length,
+                clusterSuccess,
+                complexSuccess,
+              },
             },
           }
         : {}),

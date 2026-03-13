@@ -103,11 +103,21 @@ export function useInfiniteArticles(
   const isLoadingMore = isLoading || (size > 0 && data && typeof data[size - 1] === "undefined");
 
   // 자동으로 모든 페이지 로드 (지도에 전체 마커 표시용)
+  // useRef로 로딩 상태 추적하여 race condition 방지
   useEffect(() => {
-    if (options.initialLoadAll && hasMore && !isLoadingMore && !isLoading && data && data.length > 0) {
+    if (!options.initialLoadAll) return;
+    if (isLoading || isValidating) return;
+    if (!data || data.length === 0) return;
+
+    // 마지막 페이지의 hasMore 확인
+    const lastPage = data[data.length - 1];
+    const moreAvailable = lastPage?.data.hasMore ?? false;
+
+    if (moreAvailable && data.length === size) {
+      // 모든 요청된 페이지가 로드되었고, 더 있으면 다음 페이지 요청
       setSize(size + 1);
     }
-  }, [options.initialLoadAll, hasMore, isLoadingMore, isLoading, data, size, setSize]);
+  }, [options.initialLoadAll, isLoading, isValidating, data, size, setSize]);
 
   const loadMore = () => {
     if (!isLoadingMore && hasMore) {

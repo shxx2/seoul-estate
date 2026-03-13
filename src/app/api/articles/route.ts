@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { cortarNoToBounds } from '@/lib/region-lookup';
+import { cortarNoToBounds, splitBoundsIntoTiles } from '@/lib/region-lookup';
 import { getCached, setCache } from '@/lib/cache/server-cache';
 import {
   fetchArticleList,
@@ -317,38 +317,56 @@ export async function GET(req: NextRequest) {
       return { articles: allNaverArticles, diagnostics };
     };
 
-    // 2. Complex API 호출 (단지 기반) - 단지 목록 조회 후 각 단지별 매물 조회
+    // 2. Complex API 호출 (단지 기반) - Spatial Tiling으로 더 많은 단지 커버
     const fetchComplexBasedArticles = async (): Promise<{
       articles: NaverComplexArticleItem[];
       complexCount: number;
     }> => {
-      // 2-1. 단지 목록 조회
-      const complexes = await fetchComplexList({
-        rletTpCd: buildingTypeCodes,
-        tradTpCd: tradeTypeCodes,
-        z: bounds.z,
-        lat: bounds.lat,
-        lon: bounds.lon,
-        btm: bounds.btm,
-        lft: bounds.lft,
-        top: bounds.top,
-        rgt: bounds.rgt,
+      // 2-1. bounds를 2x2 = 4타일로 분할하여 각 타일에서 complexList 조회
+      const tiles = splitBoundsIntoTiles(bounds, 2);
+
+      const tileComplexPromises = tiles.map((tile) =>
+        fetchComplexList({
+          rletTpCd: buildingTypeCodes,
+          tradTpCd: tradeTypeCodes,
+          z: tile.z,
+          lat: tile.lat,
+          lon: tile.lon,
+          btm: tile.btm,
+          lft: tile.lft,
+          top: tile.top,
+          rgt: tile.rgt,
+        }).catch((err) => {
+          console.warn('[Articles] fetchComplexList failed for tile:', err);
+          return [];
+        })
+      );
+
+      const tileResults = await Promise.all(tileComplexPromises);
+      const allTileComplexes = tileResults.flat();
+
+      // hscpNo 기준 중복 제거
+      const seenHscpNo = new Set<string>();
+      const uniqueComplexes = allTileComplexes.filter((c) => {
+        if (seenHscpNo.has(c.hscpNo)) return false;
+        seenHscpNo.add(c.hscpNo);
+        return true;
       });
 
-      if (complexes.length === 0) {
-        console.log('[Articles] No complexes found in bounds');
+      if (uniqueComplexes.length === 0) {
+        console.log('[Articles] No complexes found in tiled bounds');
         return { articles: [], complexCount: 0 };
       }
 
       // 매물 수(totAtclCnt) 기준 내림차순 정렬하여 매물 많은 단지 우선 처리
-      const sortedComplexes = [...complexes].sort((a, b) => b.totAtclCnt - a.totAtclCnt);
+      const sortedComplexes = [...uniqueComplexes].sort((a, b) => (b.totAtclCnt || 0) - (a.totAtclCnt || 0));
 
-      console.log('[Articles] Found complexes:', complexes.length, 'top 10:', JSON.stringify(
+      console.log('[Articles] Found complexes via tiling:', uniqueComplexes.length, 'from', allTileComplexes.length, 'raw, top 10:', JSON.stringify(
         sortedComplexes.slice(0, 10).map(c => ({ name: c.hscpNm, cnt: c.totAtclCnt }))
       ));
 
-      // 2-2. 각 단지별 매물 조회 (최대 30개 단지, 병렬로)
-      const maxComplexes = Math.min(sortedComplexes.length, 30);
+      // 2-2. 각 단지별 매물 조회 (최대 50개 단지, 병렬로)
+      const maxComplexes = Math.min(sortedComplexes.length, 50);
       const complexArticlePromises = sortedComplexes.slice(0, maxComplexes).map((complex) =>
         fetchComplexArticles({
           hscpNo: complex.hscpNo,

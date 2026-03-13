@@ -74,6 +74,39 @@ export function getRegionCenter(cortarNo: string): { lat: number; lng: number; z
 }
 
 /**
+ * bounds를 지정된 개수의 타일로 분할하여 반환
+ * @param bounds 원본 bounds
+ * @param gridSize 그리드 크기 (2 = 2x2 = 4타일, 3 = 3x3 = 9타일)
+ */
+export function splitBoundsIntoTiles(bounds: BoundsParams, gridSize: number = 2): BoundsParams[] {
+  const tiles: BoundsParams[] = [];
+
+  const latStep = (bounds.top - bounds.btm) / gridSize;
+  const lonStep = (bounds.rgt - bounds.lft) / gridSize;
+
+  for (let row = 0; row < gridSize; row++) {
+    for (let col = 0; col < gridSize; col++) {
+      const tileBtm = bounds.btm + (row * latStep);
+      const tileTop = bounds.btm + ((row + 1) * latStep);
+      const tileLft = bounds.lft + (col * lonStep);
+      const tileRgt = bounds.lft + ((col + 1) * lonStep);
+
+      tiles.push({
+        lat: (tileBtm + tileTop) / 2,
+        lon: (tileLft + tileRgt) / 2,
+        btm: tileBtm,
+        top: tileTop,
+        lft: tileLft,
+        rgt: tileRgt,
+        z: bounds.z + 1, // 타일링시 줌 레벨 증가
+      });
+    }
+  }
+
+  return tiles;
+}
+
+/**
  * cortarNo로 폴리곤 좌표 반환 (bounds를 사각형 폴리곤으로 변환) - 폴백용 동기 함수
  */
 export function getRegionPolygon(cortarNo: string): { lat: number; lng: number }[] | null {

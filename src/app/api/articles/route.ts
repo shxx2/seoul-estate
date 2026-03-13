@@ -340,11 +340,16 @@ export async function GET(req: NextRequest) {
         return { articles: [], complexCount: 0 };
       }
 
-      console.log('[Articles] Found complexes:', complexes.length);
+      // 매물 수(totAtclCnt) 기준 내림차순 정렬하여 매물 많은 단지 우선 처리
+      const sortedComplexes = [...complexes].sort((a, b) => b.totAtclCnt - a.totAtclCnt);
 
-      // 2-2. 각 단지별 매물 조회 (최대 20개 단지만, 병렬로)
-      const maxComplexes = Math.min(complexes.length, 20);
-      const complexArticlePromises = complexes.slice(0, maxComplexes).map((complex) =>
+      console.log('[Articles] Found complexes:', complexes.length, 'top 10:', JSON.stringify(
+        sortedComplexes.slice(0, 10).map(c => ({ name: c.hscpNm, cnt: c.totAtclCnt }))
+      ));
+
+      // 2-2. 각 단지별 매물 조회 (최대 30개 단지, 병렬로)
+      const maxComplexes = Math.min(sortedComplexes.length, 30);
+      const complexArticlePromises = sortedComplexes.slice(0, maxComplexes).map((complex) =>
         fetchComplexArticles({
           hscpNo: complex.hscpNo,
           tradTpCd: tradeTypeCodes,

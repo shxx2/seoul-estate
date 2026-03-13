@@ -1,7 +1,7 @@
 import pLimit from "p-limit";
-import { NAVER_ARTICLE_LIST_URL, NAVER_ARTICLE_DETAIL_URL, NAVER_REGION_ARTICLES_URL } from "./endpoints";
+import { NAVER_ARTICLE_LIST_URL, NAVER_ARTICLE_DETAIL_URL, NAVER_REGION_ARTICLES_URL, NAVER_COMPLEX_LIST_URL, NAVER_COMPLEX_ARTICLE_LIST_URL } from "./endpoints";
 import { BUILDING_TYPE_TO_NAVER, TRADE_TYPE_TO_NAVER } from "@/lib/constants";
-import type { NaverArticleListResponse, NaverRegionArticleListResponse } from "./types";
+import type { NaverArticleListResponse, NaverRegionArticleListResponse, NaverComplexListResponse, NaverComplexArticleListResponse, NaverComplexItem, NaverComplexArticleItem } from "./types";
 import type { BuildingType, TradeType } from "@/types/article";
 import { naverCache } from "./cache";
 import type { NaverFetchDiagnostics } from "./diagnostics";
@@ -620,4 +620,113 @@ export async function fetchArticlesByCortarNo(
 
     throw new NaverUpstreamError("NETWORK_ERROR", "unreachable retry state");
   });
+}
+
+// ===== Complex API (단지 기반) =====
+
+export interface ComplexListParams {
+  rletTpCd: string;  // 부동산유형 코드 (e.g. "APT:VL:OPST")
+  tradTpCd: string;  // 거래유형 코드 (e.g. "A1:B1:B2")
+  z: number;
+  lat: number;
+  lon: number;
+  btm: number;
+  lft: number;
+  top: number;
+  rgt: number;
+}
+
+/** 단지 목록 조회 */
+export async function fetchComplexList(
+  params: ComplexListParams
+): Promise<NaverComplexItem[]> {
+  return withConcurrencyLimit(async () => {
+    const runtimeConfig = resolveNaverRequestRuntimeConfig();
+    const url = new URL(NAVER_COMPLEX_LIST_URL);
+
+    url.searchParams.set("rletTpCd", params.rletTpCd);
+    url.searchParams.set("tradTpCd", params.tradTpCd);
+    url.searchParams.set("z", String(params.z));
+    url.searchParams.set("lat", String(params.lat));
+    url.searchParams.set("lon", String(params.lon));
+    url.searchParams.set("btm", String(params.btm));
+    url.searchParams.set("lft", String(params.lft));
+    url.searchParams.set("top", String(params.top));
+    url.searchParams.set("rgt", String(params.rgt));
+
+    await randomDelay(runtimeConfig.delayMinMs, runtimeConfig.delayMaxMs);
+
+    const response = await requestUpstreamText(url.toString(), {
+      headers: getHeaders(),
+      timeoutMs: runtimeConfig.requestTimeoutMs,
+    });
+
+    if (response.status >= 400) {
+      console.error('[NaverAPI] fetchComplexList failed:', response.status);
+      return [];
+    }
+
+    try {
+      const json = JSON.parse(response.text) as NaverComplexListResponse;
+      console.log('[NaverAPI] fetchComplexList count:', json.result?.length ?? 0);
+      return json.result ?? [];
+    } catch {
+      console.error('[NaverAPI] fetchComplexList parse error');
+      return [];
+    }
+  });
+}
+
+export interface ComplexArticleListParams {
+  hscpNo: string;    // 단지번호
+  tradTpCd: string;  // 거래유형 코드
+}
+
+/** 단지별 매물 목록 조회 (모든 페이지) */
+export async function fetchComplexArticles(
+  params: ComplexArticleListParams
+): Promise<NaverComplexArticleItem[]> {
+  const runtimeConfig = resolveNaverRequestRuntimeConfig();
+  const allArticles: NaverComplexArticleItem[] = [];
+  let page = 1;
+  const maxPages = 10;
+
+  while (page <= maxPages) {
+    const result = await withConcurrencyLimit(async () => {
+      const url = new URL(NAVER_COMPLEX_ARTICLE_LIST_URL);
+      url.searchParams.set("hscpNo", params.hscpNo);
+      url.searchParams.set("tradTpCd", params.tradTpCd);
+      url.searchParams.set("page", String(page));
+
+      await randomDelay(runtimeConfig.delayMinMs, runtimeConfig.delayMaxMs);
+
+      const response = await requestUpstreamText(url.toString(), {
+        headers: getHeaders(),
+        timeoutMs: runtimeConfig.requestTimeoutMs,
+      });
+
+      if (response.status >= 400) {
+        console.warn('[NaverAPI] fetchComplexArticles failed for hscpNo:', params.hscpNo, response.status);
+        return { articles: [] as NaverComplexArticleItem[], hasMore: false };
+      }
+
+      try {
+        const json = JSON.parse(response.text) as NaverComplexArticleListResponse;
+        return {
+          articles: json.result?.list ?? [],
+          hasMore: json.result?.moreDataYn === "Y",
+        };
+      } catch {
+        console.error('[NaverAPI] fetchComplexArticles parse error for hscpNo:', params.hscpNo);
+        return { articles: [] as NaverComplexArticleItem[], hasMore: false };
+      }
+    });
+
+    allArticles.push(...result.articles);
+    if (!result.hasMore) break;
+    page++;
+  }
+
+  console.log('[NaverAPI] fetchComplexArticles total for', params.hscpNo, ':', allArticles.length);
+  return allArticles;
 }

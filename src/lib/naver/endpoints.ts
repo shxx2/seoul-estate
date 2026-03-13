@@ -9,3 +9,9 @@ export const NAVER_REGIONS_URL =
 
 export const NAVER_REGION_ARTICLES_URL =
   "https://new.land.naver.com/api/articles";
+
+export const NAVER_COMPLEX_LIST_URL =
+  "https://m.land.naver.com/cluster/ajax/complexList";
+
+export const NAVER_COMPLEX_ARTICLE_LIST_URL =
+  "https://m.land.naver.com/complex/getComplexArticleList";

@@ -74,3 +74,52 @@ export interface NaverRegionArticleItem {
   sameAddrDirectCnt: number;   // 같은 주소 직거래 매물 수
   cortarNo?: string;           // 법정동코드
 }
+
+/** 네이버 complexList API 응답 아이템 */
+export interface NaverComplexItem {
+  hscpNo: string;          // 단지번호
+  hscpNm: string;          // 단지명
+  cortarNo: string;        // 법정동코드
+  totAtclCnt: number;      // 총 매물 수
+  lat: number;             // 위도
+  lng: number;             // 경도
+}
+
+/** 네이버 complexList API 응답 */
+export interface NaverComplexListResponse {
+  result: NaverComplexItem[];
+}
+
+/** 네이버 getComplexArticleList API 응답 */
+export interface NaverComplexArticleListResponse {
+  result: {
+    list: NaverComplexArticleItem[];
+    moreDataYn: string;    // "Y" or "N"
+  };
+}
+
+/** 네이버 단지별 매물 아이템 */
+export interface NaverComplexArticleItem {
+  atclNo: string;          // 매물번호
+  atclNm: string;          // 매물명
+  rletTpNm: string;        // 부동산유형명
+  tradTpNm: string;        // 거래유형명
+  flrInfo: string;         // 층 정보
+  prc: number;             // 가격 (만원)
+  hanPrc: string;          // 한글 가격
+  rentPrc: number;         // 월세 (만원)
+  spc1: number;            // 공급면적
+  spc2: number;            // 전용면적
+  direction: string;       // 방향
+  atclCfmYmd: string;      // 확인일자
+  lat: number;             // 위도
+  lng: number;             // 경도
+  atclFetrDesc: string;    // 매물 특징
+  tagList: string[];       // 태그 목록
+  bildNm: string;          // 건물명
+  cpNm: string;            // 중개업소명
+  rltrNm: string;          // 중개사명
+  repImgUrl: string;       // 대표 이미지
+  repImgThumb: string;     // 썸네일 타입
+  cortarNo?: string;       // 법정동코드
+}

@@ -4,12 +4,13 @@ import { cortarNoToBounds } from '@/lib/region-lookup';
 import { getCached, setCache } from '@/lib/cache/server-cache';
 import {
   fetchArticleList,
-  fetchArticlesByCortarNo,
+  fetchComplexList,
+  fetchComplexArticles,
   NaverUpstreamError,
   resolveNaverRequestRuntimeConfig,
 } from '@/lib/naver/client';
-import { transformNaverArticle, transformNaverRegionArticle } from '@/lib/naver/transform';
-import type { NaverArticleItem, NaverRegionArticleItem } from '@/lib/naver/types';
+import { transformNaverArticle } from '@/lib/naver/transform';
+import type { NaverArticleItem, NaverComplexArticleItem } from '@/lib/naver/types';
 import { apiSuccess, apiError } from '@/lib/api-response';
 import { TRADE_TYPE_TO_NAVER, BUILDING_TYPE_TO_NAVER } from '@/lib/constants';
 import { mergeNaverFetchDiagnostics, type NaverFetchDiagnostics } from '@/lib/naver/diagnostics';
@@ -316,56 +317,63 @@ export async function GET(req: NextRequest) {
       return { articles: allNaverArticles, diagnostics };
     };
 
-    // 2. Region API 호출 (cortarNo 기반) - 다중 페이지 페칭
-    const fetchRegionArticles = async (): Promise<{
-      articles: NaverRegionArticleItem[];
-      diagnostics: NaverFetchDiagnostics[];
+    // 2. Complex API 호출 (단지 기반) - 단지 목록 조회 후 각 단지별 매물 조회
+    const fetchComplexBasedArticles = async (): Promise<{
+      articles: NaverComplexArticleItem[];
+      complexCount: number;
     }> => {
-      const allRegionArticles: NaverRegionArticleItem[] = [];
-      const diagnostics: NaverFetchDiagnostics[] = [];
-      let page = 1;
-      const maxPages = 5; // Region API는 최대 5페이지까지 조회
+      // 2-1. 단지 목록 조회
+      const complexes = await fetchComplexList({
+        rletTpCd: buildingTypeCodes,
+        tradTpCd: tradeTypeCodes,
+        z: bounds.z,
+        lat: bounds.lat,
+        lon: bounds.lon,
+        btm: bounds.btm,
+        lft: bounds.lft,
+        top: bounds.top,
+        rgt: bounds.rgt,
+      });
 
-      while (page <= maxPages) {
-        const result = await fetchArticlesByCortarNo({
-          cortarNo,
-          realEstateType: buildingTypeCodes,
-          tradeType: tradeTypeCodes,
-          page,
-          spcMin: params.areaMin,
-          spcMax: params.areaMax,
-          priceMin: params.dealPriceMin,
-          priceMax: params.dealPriceMax,
-          dprcMin: params.depositMin,
-          dprcMax: params.depositMax,
-          rprcMin: params.monthlyRentMin,
-          rprcMax: params.monthlyRentMax,
-        }, { forceRefresh });
-
-        diagnostics.push(result.diagnostics);
-        allRegionArticles.push(...(result.response.articleList ?? []));
-
-        if (!result.response.isMoreData) {
-          break;
-        }
-        page++;
+      if (complexes.length === 0) {
+        console.log('[Articles] No complexes found in bounds');
+        return { articles: [], complexCount: 0 };
       }
 
-      return { articles: allRegionArticles, diagnostics };
+      console.log('[Articles] Found complexes:', complexes.length);
+
+      // 2-2. 각 단지별 매물 조회 (최대 20개 단지만, 병렬로)
+      const maxComplexes = Math.min(complexes.length, 20);
+      const complexArticlePromises = complexes.slice(0, maxComplexes).map((complex) =>
+        fetchComplexArticles({
+          hscpNo: complex.hscpNo,
+          tradTpCd: tradeTypeCodes,
+        }).catch((err) => {
+          console.warn('[Articles] fetchComplexArticles failed for', complex.hscpNo, err);
+          return [] as NaverComplexArticleItem[];
+        })
+      );
+
+      const complexArticleResults = await Promise.all(complexArticlePromises);
+      const allComplexArticles = complexArticleResults.flat();
+
+      console.log('[Articles] Complex API total articles:', allComplexArticles.length);
+      return { articles: allComplexArticles, complexCount: maxComplexes };
     };
 
     // 3. 두 API를 병렬 호출 (Promise.allSettled로 graceful degradation)
-    const [clusterResult, regionResult] = await Promise.allSettled([
+    const [clusterResult, complexResult] = await Promise.allSettled([
       fetchClusterArticles(),
-      fetchRegionArticles(),
+      fetchComplexBasedArticles(),
     ]);
 
     // 4. 결과 수집 및 병합
     const allNaverArticles: NaverArticleItem[] = [];
-    const regionArticles: NaverRegionArticleItem[] = [];
+    const complexArticles: NaverComplexArticleItem[] = [];
     const diagnostics: NaverFetchDiagnostics[] = [];
     let clusterSuccess = false;
-    let regionSuccess = false;
+    let complexSuccess = false;
+    let complexCount = 0;
 
     if (clusterResult.status === 'fulfilled') {
       allNaverArticles.push(...clusterResult.value.articles);
@@ -375,33 +383,35 @@ export async function GET(req: NextRequest) {
       console.error('[Articles] Cluster API failed:', clusterResult.reason);
     }
 
-    if (regionResult.status === 'fulfilled') {
-      regionArticles.push(...regionResult.value.articles);
-      diagnostics.push(...regionResult.value.diagnostics);
-      regionSuccess = true;
+    if (complexResult.status === 'fulfilled') {
+      complexArticles.push(...complexResult.value.articles);
+      complexCount = complexResult.value.complexCount;
+      complexSuccess = true;
     } else {
-      console.warn('[Articles] Region API failed (graceful degradation):', regionResult.reason);
+      console.warn('[Articles] Complex API failed (graceful degradation):', complexResult.reason);
     }
 
     // 둘 다 실패하면 에러
-    if (!clusterSuccess && !regionSuccess) {
+    if (!clusterSuccess && !complexSuccess) {
       throw clusterResult.status === 'rejected' ? clusterResult.reason : new Error('Both APIs failed');
     }
 
-    // 5. 변환 및 병합 (Cluster 우선, Region 보완)
+    // 5. 변환 및 병합 (Cluster 우선, Complex 보완)
+    // NaverComplexArticleItem은 NaverArticleItem과 동일한 필드를 가짐
     const clusterArticles = allNaverArticles.map(transformNaverArticle);
-    const regionTransformed = regionArticles.map(transformNaverRegionArticle);
+    const complexTransformed = complexArticles.map((item) => transformNaverArticle(item as unknown as NaverArticleItem));
 
-    // Cluster 결과를 먼저 넣고, Region 결과를 뒤에 추가 (dedupe에서 첫 번째 우선)
-    const mergedArticles = dedupeArticlesById([...clusterArticles, ...regionTransformed]);
+    // Cluster 결과를 먼저 넣고, Complex 결과를 뒤에 추가 (dedupe에서 첫 번째 우선)
+    const mergedArticles = dedupeArticlesById([...clusterArticles, ...complexTransformed]);
 
     console.log('[Articles] dual API merge:', JSON.stringify({
       cortarNo,
       clusterCount: clusterArticles.length,
-      regionCount: regionTransformed.length,
+      complexCount: complexTransformed.length,
+      complexesQueried: complexCount,
       mergedCount: mergedArticles.length,
       clusterSuccess,
-      regionSuccess,
+      complexSuccess,
     }));
 
     const requestedGuCode = params.guCode || cortarNo;

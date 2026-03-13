@@ -4,14 +4,15 @@ import { cortarNoToBounds } from '@/lib/region-lookup';
 import { getCached, setCache } from '@/lib/cache/server-cache';
 import {
   fetchArticleList,
+  fetchArticlesByCortarNo,
   NaverUpstreamError,
   resolveNaverRequestRuntimeConfig,
 } from '@/lib/naver/client';
-import { transformNaverArticle } from '@/lib/naver/transform';
-import type { NaverArticleItem } from '@/lib/naver/types';
+import { transformNaverArticle, transformNaverRegionArticle } from '@/lib/naver/transform';
+import type { NaverArticleItem, NaverRegionArticleItem } from '@/lib/naver/types';
 import { apiSuccess, apiError } from '@/lib/api-response';
 import { TRADE_TYPE_TO_NAVER, BUILDING_TYPE_TO_NAVER } from '@/lib/constants';
-import { mergeNaverFetchDiagnostics } from '@/lib/naver/diagnostics';
+import { mergeNaverFetchDiagnostics, type NaverFetchDiagnostics } from '@/lib/naver/diagnostics';
 import {
   buildArticleFetchPageBatches,
   createArticleFetchPlan,
@@ -30,6 +31,18 @@ import type { Article, TradeType, BuildingType } from '@/types/article';
 // Edge Runtime 사용 - Hobby 플랜에서도 30초 타임아웃
 export const runtime = 'edge';
 export const preferredRegion = 'icn1';
+
+/** ID 기준으로 매물 중복제거 (첫 번째 항목 우선) */
+function dedupeArticlesById(articles: Article[]): Article[] {
+  const seen = new Set<string>();
+  return articles.filter((article) => {
+    if (seen.has(article.id)) {
+      return false;
+    }
+    seen.add(article.id);
+    return true;
+  });
+}
 
 // guCode를 구 이름으로 매핑 (서울 25개 구 전체)
 const guCodeToName: Record<string, string> = {
@@ -238,66 +251,163 @@ export async function GET(req: NextRequest) {
       batchSize: pageBatches[0]?.length ?? 0,
       batchCount: pageBatches.length,
     }));
-    const allNaverArticles: NaverArticleItem[] = [];
-    const diagnostics = [];
 
-    for (const pageBatch of pageBatches) {
-      const batchResult = await fetchPageBatchWithRecovery({
-        pages: pageBatch,
-        fetchPage: (page) =>
-          fetchArticleList({
-            rletTpCd: buildingTypeCodes,
-            tradTpCd: tradeTypeCodes,
-            z: bounds.z,
-            lat: bounds.lat,
-            lon: bounds.lon,
-            btm: bounds.btm,
-            lft: bounds.lft,
-            top: bounds.top,
-            rgt: bounds.rgt,
-            page,
-            spcMin: params.areaMin,
-            spcMax: params.areaMax,
-            prcMin: params.dealPriceMin,
-            prcMax: params.dealPriceMax,
-            dprcMin: params.depositMin,
-            dprcMax: params.depositMax,
-            wprcMin: params.monthlyRentMin,
-            wprcMax: params.monthlyRentMax,
-          }, {
-            forceRefresh,
-          }),
-      });
+    // ===== Dual API 호출: Cluster API + Region API =====
 
-      if (batchResult.recoveredPages.length > 0) {
-        console.warn('[Articles] recovered pages after batch failure:', JSON.stringify({
-          cortarNo,
-          recoveredPages: batchResult.recoveredPages,
-        }));
-      }
+    // 1. Cluster API 호출 (기존 좌표 기반)
+    const fetchClusterArticles = async (): Promise<{
+      articles: NaverArticleItem[];
+      diagnostics: NaverFetchDiagnostics[];
+    }> => {
+      const allNaverArticles: NaverArticleItem[] = [];
+      const diagnostics: NaverFetchDiagnostics[] = [];
 
-      let reachedEndOfUpstream = false;
-      for (const { value: result } of batchResult.results) {
-        diagnostics.push(result.diagnostics);
-        allNaverArticles.push(...(result.response.body ?? []));
+      for (const pageBatch of pageBatches) {
+        const batchResult = await fetchPageBatchWithRecovery({
+          pages: pageBatch,
+          fetchPage: (page) =>
+            fetchArticleList({
+              rletTpCd: buildingTypeCodes,
+              tradTpCd: tradeTypeCodes,
+              z: bounds.z,
+              lat: bounds.lat,
+              lon: bounds.lon,
+              btm: bounds.btm,
+              lft: bounds.lft,
+              top: bounds.top,
+              rgt: bounds.rgt,
+              page,
+              spcMin: params.areaMin,
+              spcMax: params.areaMax,
+              prcMin: params.dealPriceMin,
+              prcMax: params.dealPriceMax,
+              dprcMin: params.depositMin,
+              dprcMax: params.depositMax,
+              wprcMin: params.monthlyRentMin,
+              wprcMax: params.monthlyRentMax,
+            }, {
+              forceRefresh,
+            }),
+        });
 
-        // 더 이상 데이터가 없으면 다음 배치부터는 중단한다.
-        // undefined는 "더 있음"으로 처리 (명시적 false만 중단)
-        if (result.response.isMoreData === false || result.response.more === false) {
-          reachedEndOfUpstream = true;
+        if (batchResult.recoveredPages.length > 0) {
+          console.warn('[Articles] recovered pages after batch failure:', JSON.stringify({
+            cortarNo,
+            recoveredPages: batchResult.recoveredPages,
+          }));
+        }
+
+        let reachedEndOfUpstream = false;
+        for (const { value: result } of batchResult.results) {
+          diagnostics.push(result.diagnostics);
+          allNaverArticles.push(...(result.response.body ?? []));
+
+          if (result.response.isMoreData === false || result.response.more === false) {
+            reachedEndOfUpstream = true;
+            break;
+          }
+        }
+
+        if (reachedEndOfUpstream) {
           break;
         }
       }
 
-      if (reachedEndOfUpstream) {
-        break;
+      return { articles: allNaverArticles, diagnostics };
+    };
+
+    // 2. Region API 호출 (cortarNo 기반) - 다중 페이지 페칭
+    const fetchRegionArticles = async (): Promise<{
+      articles: NaverRegionArticleItem[];
+      diagnostics: NaverFetchDiagnostics[];
+    }> => {
+      const allRegionArticles: NaverRegionArticleItem[] = [];
+      const diagnostics: NaverFetchDiagnostics[] = [];
+      let page = 1;
+      const maxPages = 5; // Region API는 최대 5페이지까지 조회
+
+      while (page <= maxPages) {
+        const result = await fetchArticlesByCortarNo({
+          cortarNo,
+          realEstateType: buildingTypeCodes,
+          tradeType: tradeTypeCodes,
+          page,
+          spcMin: params.areaMin,
+          spcMax: params.areaMax,
+          priceMin: params.dealPriceMin,
+          priceMax: params.dealPriceMax,
+          dprcMin: params.depositMin,
+          dprcMax: params.depositMax,
+          rprcMin: params.monthlyRentMin,
+          rprcMax: params.monthlyRentMax,
+        }, { forceRefresh });
+
+        diagnostics.push(result.diagnostics);
+        allRegionArticles.push(...(result.response.articleList ?? []));
+
+        if (!result.response.isMoreData) {
+          break;
+        }
+        page++;
       }
+
+      return { articles: allRegionArticles, diagnostics };
+    };
+
+    // 3. 두 API를 병렬 호출 (Promise.allSettled로 graceful degradation)
+    const [clusterResult, regionResult] = await Promise.allSettled([
+      fetchClusterArticles(),
+      fetchRegionArticles(),
+    ]);
+
+    // 4. 결과 수집 및 병합
+    const allNaverArticles: NaverArticleItem[] = [];
+    const regionArticles: NaverRegionArticleItem[] = [];
+    const diagnostics: NaverFetchDiagnostics[] = [];
+    let clusterSuccess = false;
+    let regionSuccess = false;
+
+    if (clusterResult.status === 'fulfilled') {
+      allNaverArticles.push(...clusterResult.value.articles);
+      diagnostics.push(...clusterResult.value.diagnostics);
+      clusterSuccess = true;
+    } else {
+      console.error('[Articles] Cluster API failed:', clusterResult.reason);
     }
+
+    if (regionResult.status === 'fulfilled') {
+      regionArticles.push(...regionResult.value.articles);
+      diagnostics.push(...regionResult.value.diagnostics);
+      regionSuccess = true;
+    } else {
+      console.warn('[Articles] Region API failed (graceful degradation):', regionResult.reason);
+    }
+
+    // 둘 다 실패하면 에러
+    if (!clusterSuccess && !regionSuccess) {
+      throw clusterResult.status === 'rejected' ? clusterResult.reason : new Error('Both APIs failed');
+    }
+
+    // 5. 변환 및 병합 (Cluster 우선, Region 보완)
+    const clusterArticles = allNaverArticles.map(transformNaverArticle);
+    const regionTransformed = regionArticles.map(transformNaverRegionArticle);
+
+    // Cluster 결과를 먼저 넣고, Region 결과를 뒤에 추가 (dedupe에서 첫 번째 우선)
+    const mergedArticles = dedupeArticlesById([...clusterArticles, ...regionTransformed]);
+
+    console.log('[Articles] dual API merge:', JSON.stringify({
+      cortarNo,
+      clusterCount: clusterArticles.length,
+      regionCount: regionTransformed.length,
+      mergedCount: mergedArticles.length,
+      clusterSuccess,
+      regionSuccess,
+    }));
 
     const requestedGuCode = params.guCode || cortarNo;
     const requestedGuName = guCodeToName[requestedGuCode];
     const normalized = normalizeArticleResults(
-      allNaverArticles.map(transformNaverArticle),
+      mergedArticles,
       {
         bounds,
         requestedGuName,

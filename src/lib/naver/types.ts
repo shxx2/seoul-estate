@@ -41,3 +41,36 @@ export interface NaverArticleItem {
   bathroomCnt?: number;      // 욕실 수
   cpPcArticleUrl?: string;   // 중개사 PC 매물 URL
 }
+
+/** 네이버 new.land.naver.com Region API 응답 (cortarNo 기반) */
+export interface NaverRegionArticleListResponse {
+  isMoreData: boolean;
+  articleList: NaverRegionArticleItem[];
+}
+
+export interface NaverRegionArticleItem {
+  articleNo: string;           // 매물번호
+  articleName: string;         // 매물명 (건물명)
+  realEstateTypeName: string;  // 부동산유형명 ("아파트", "오피스텔" 등)
+  tradeTypeName: string;       // 거래유형명 ("매매", "전세", "월세")
+  floorInfo: string;           // 층 정보 ("3/15")
+  dealOrWarrantPrc: string;    // 가격 문자열 (매매가 또는 보증금, e.g. "3억 5,000")
+  rentPrc: string;             // 월세 문자열 (e.g. "50")
+  areaName: string;            // 면적 표시 (e.g. "84/59")
+  area1: number;               // 공급면적 (m2)
+  area2: number;               // 전용면적 (m2)
+  direction: string;           // 방향
+  articleConfirmYmd: string;   // 확인일자 (YYYYMMDD 또는 YY.MM.DD)
+  latitude: number;            // 위도
+  longitude: number;           // 경도
+  articleFeatureDesc: string;  // 매물 특징 설명
+  tagList: string[];           // 태그 목록
+  buildingName: string;        // 건물명
+  cpName: string;              // 중개업소명
+  realtorName: string;         // 중개사명
+  representativeImgUrl: string; // 대표 이미지 URL (전체 URL)
+  cpid: string;                // 중개사 ID
+  sameAddrCnt: number;         // 같은 주소 매물 수
+  sameAddrDirectCnt: number;   // 같은 주소 직거래 매물 수
+  cortarNo?: string;           // 법정동코드
+}

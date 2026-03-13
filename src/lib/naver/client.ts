@@ -1,7 +1,7 @@
 import pLimit from "p-limit";
-import { NAVER_ARTICLE_LIST_URL, NAVER_ARTICLE_DETAIL_URL } from "./endpoints";
+import { NAVER_ARTICLE_LIST_URL, NAVER_ARTICLE_DETAIL_URL, NAVER_REGION_ARTICLES_URL } from "./endpoints";
 import { BUILDING_TYPE_TO_NAVER, TRADE_TYPE_TO_NAVER } from "@/lib/constants";
-import type { NaverArticleListResponse } from "./types";
+import type { NaverArticleListResponse, NaverRegionArticleListResponse } from "./types";
 import type { BuildingType, TradeType } from "@/types/article";
 import { naverCache } from "./cache";
 import type { NaverFetchDiagnostics } from "./diagnostics";
@@ -410,5 +410,214 @@ export async function fetchArticleDetail(
 
     const json = JSON.parse(response.text) as NaverArticleDetailResponse;
     return json;
+  });
+}
+
+// ===== Region API (cortarNo 기반) =====
+
+export interface RegionArticleListParams {
+  cortarNo: string;           // 법정동코드 (e.g. "1120000000" for 성동구)
+  realEstateType: string;     // 부동산유형 (콜론 구분, e.g. "APT:OPST:VL")
+  tradeType: string;          // 거래유형 (콜론 구분, e.g. "A1:B1:B2")
+  page?: number;
+  spcMin?: number;            // 전용면적 최소 (m2)
+  spcMax?: number;            // 전용면적 최대 (m2)
+  priceMin?: number;          // 매매가 최소 (만원)
+  priceMax?: number;          // 매매가 최대 (만원)
+  dprcMin?: number;           // 보증금 최소 (만원)
+  dprcMax?: number;           // 보증금 최대 (만원)
+  rprcMin?: number;           // 월세 최소 (만원)
+  rprcMax?: number;           // 월세 최대 (만원)
+}
+
+/** Region API용 헤더 (new.land.naver.com 전용) */
+function getRegionApiHeaders(): Record<string, string> {
+  return {
+    "User-Agent": getRandomUserAgent(),
+    "Referer": "https://new.land.naver.com/",
+    "Accept": "application/json, text/plain, */*",
+    "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+  };
+}
+
+function buildRegionArticleRequestUrl(params: RegionArticleListParams): string {
+  const url = new URL(NAVER_REGION_ARTICLES_URL);
+  url.searchParams.set("cortarNo", params.cortarNo);
+  url.searchParams.set("realEstateType", params.realEstateType);
+  url.searchParams.set("tradeType", params.tradeType);
+  url.searchParams.set("page", String(params.page ?? 1));
+
+  if (params.spcMin !== undefined) {
+    url.searchParams.set("spcMin", String(params.spcMin));
+  }
+  if (params.spcMax !== undefined) {
+    url.searchParams.set("spcMax", String(params.spcMax));
+  }
+  if (params.priceMin !== undefined) {
+    url.searchParams.set("priceMin", String(params.priceMin));
+  }
+  if (params.priceMax !== undefined) {
+    url.searchParams.set("priceMax", String(params.priceMax));
+  }
+  if (params.dprcMin !== undefined) {
+    url.searchParams.set("dprcMin", String(params.dprcMin));
+  }
+  if (params.dprcMax !== undefined) {
+    url.searchParams.set("dprcMax", String(params.dprcMax));
+  }
+  if (params.rprcMin !== undefined) {
+    url.searchParams.set("rprcMin", String(params.rprcMin));
+  }
+  if (params.rprcMax !== undefined) {
+    url.searchParams.set("rprcMax", String(params.rprcMax));
+  }
+
+  return url.toString();
+}
+
+export function parseNaverRegionArticleListResponse(
+  status: number,
+  bodyText: string
+): NaverRegionArticleListResponse {
+  const preview = bodyText.slice(0, 300);
+  const trimmed = bodyText.trimStart().toLowerCase();
+
+  if (
+    status === 307 ||
+    status === 308 ||
+    trimmed.startsWith("<!doctype html") ||
+    trimmed.startsWith("<html")
+  ) {
+    throw new NaverUpstreamError(
+      "UPSTREAM_REDIRECT",
+      `fetchArticlesByCortarNo redirected with status ${status}`,
+      status,
+      preview
+    );
+  }
+
+  if (status >= 400) {
+    throw new NaverUpstreamError(
+      "HTTP_ERROR",
+      `fetchArticlesByCortarNo failed: ${status}`,
+      status,
+      preview
+    );
+  }
+
+  try {
+    const parsed = JSON.parse(bodyText) as NaverRegionArticleListResponse;
+    if (!Array.isArray(parsed.articleList)) {
+      // Region API가 빈 결과를 반환할 때 articleList가 없을 수 있음
+      return { isMoreData: false, articleList: [] };
+    }
+    return parsed;
+  } catch (error) {
+    throw new NaverUpstreamError(
+      "INVALID_JSON",
+      error instanceof Error ? error.message : "invalid json",
+      status,
+      preview
+    );
+  }
+}
+
+export interface FetchRegionArticleListResult {
+  response: NaverRegionArticleListResponse;
+  diagnostics: NaverFetchDiagnostics;
+}
+
+/** cortarNo 기반 매물 목록 조회 (Region API) */
+export async function fetchArticlesByCortarNo(
+  params: RegionArticleListParams,
+  options: FetchArticleListOptions = {}
+): Promise<FetchRegionArticleListResult> {
+  return withConcurrencyLimit(async () => {
+    const runtimeConfig = resolveNaverRequestRuntimeConfig();
+    const requestUrl = buildRegionArticleRequestUrl(params);
+    const cacheKey = `region:${requestUrl}`;
+
+    if (!options.forceRefresh) {
+      const cached = naverCache.get<NaverRegionArticleListResponse>(cacheKey);
+      if (cached) {
+        console.log('[NaverAPI] Region cache hit, returning cached data');
+        return {
+          response: cached,
+          diagnostics: {
+            requestUrl,
+            pagesFetched: 1,
+            upstreamArticleCount: cached.articleList?.length ?? 0,
+            upstreamStatusCodes: [],
+            retryCount: 0,
+          },
+        };
+      }
+    }
+
+    console.log('[NaverAPI] Region cache miss, fetching:', requestUrl);
+
+    const maxRetries = options.maxRetries ?? runtimeConfig.maxRetries;
+    const upstreamStatusCodes: number[] = [];
+    let retryCount = 0;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        await randomDelay(runtimeConfig.delayMinMs, runtimeConfig.delayMaxMs);
+
+        const response = await requestUpstreamText(requestUrl, {
+          headers: getRegionApiHeaders(),
+          timeoutMs: runtimeConfig.requestTimeoutMs,
+        });
+
+        upstreamStatusCodes.push(response.status);
+        console.log('[NaverAPI] fetchArticlesByCortarNo response status:', response.status, response.statusText);
+
+        const json = parseNaverRegionArticleListResponse(response.status, response.text);
+
+        const articleCount = json.articleList?.length ?? 0;
+        console.log('[NaverAPI] fetchArticlesByCortarNo parsed article count:', articleCount);
+
+        naverCache.set(cacheKey, json);
+        console.log(`[NaverAPI] Region response cached (${articleCount} items) for 5 minutes`);
+
+        return {
+          response: json,
+          diagnostics: {
+            requestUrl,
+            pagesFetched: 1,
+            upstreamArticleCount: articleCount,
+            upstreamStatusCodes,
+            retryCount,
+          },
+        };
+      } catch (error) {
+        const naverError =
+          error instanceof NaverUpstreamError
+            ? error
+            : new NaverUpstreamError(
+                error instanceof Error && error.message.includes("timeout")
+                  ? "TIMEOUT"
+                  : "NETWORK_ERROR",
+                error instanceof Error ? error.message : "unknown network error"
+              );
+
+        if (attempt === maxRetries || !shouldRetryNaverError(naverError)) {
+          console.error(
+            '[NaverAPI] fetchArticlesByCortarNo failed:',
+            naverError.code,
+            naverError.status ?? '',
+            naverError.bodyPreview ?? naverError.message
+          );
+          throw naverError;
+        }
+
+        retryCount += 1;
+        console.warn(
+          `[NaverAPI] Retrying regionArticleList (${retryCount}/${maxRetries}) due to ${naverError.code}`
+        );
+      }
+    }
+
+    throw new NaverUpstreamError("NETWORK_ERROR", "unreachable retry state");
   });
 }

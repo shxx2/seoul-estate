@@ -6,3 +6,6 @@ export const NAVER_ARTICLE_DETAIL_URL =
 
 export const NAVER_REGIONS_URL =
   "https://new.land.naver.com/api/regions/list";
+
+export const NAVER_REGION_ARTICLES_URL =
+  "https://new.land.naver.com/api/articles";

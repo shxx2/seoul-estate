@@ -1,7 +1,7 @@
 import type { Article, TradeType, BuildingType } from "@/types/article";
 import { NAVER_TRADE_TYPE_MAP, NAVER_BUILDING_TYPE_MAP } from "@/lib/constants";
 import { m2ToPyeong, parseFloorInfo } from "@/lib/format";
-import type { NaverArticleItem } from "./types";
+import type { NaverArticleItem, NaverRegionArticleItem } from "./types";
 import seoulDistricts from "../../../public/data/seoul-districts.json";
 
 /** cortarNo 앞 4자리 → 구 코드 매핑 (불완전한 동 데이터 fallback) */
@@ -141,6 +141,126 @@ export function transformNaverArticle(raw: NaverArticleItem): Article {
       : null,
 
     // 상세 정보 가용 여부 (기본 false, 상세 API 호출 후 업데이트)
+    hasDetailInfo: false,
+  };
+}
+
+// ===== Region API 변환 함수 =====
+
+/**
+ * 가격 문자열을 만원 단위 숫자로 파싱
+ * 예: "3억 5,000" -> 35000, "5,000" -> 5000, "50" -> 50
+ */
+export function parseNaverPriceString(priceStr: string | null | undefined): number | null {
+  if (!priceStr || priceStr.trim() === "" || priceStr === "-") {
+    return null;
+  }
+
+  // 쉼표 제거
+  const cleaned = priceStr.replace(/,/g, "").trim();
+
+  // "억" 단위 처리
+  const eokMatch = cleaned.match(/(\d+)억\s*(\d*)/);
+  if (eokMatch) {
+    const eok = parseInt(eokMatch[1], 10) * 10000; // 1억 = 10000만원
+    const remainder = eokMatch[2] ? parseInt(eokMatch[2], 10) : 0;
+    return eok + remainder;
+  }
+
+  // 숫자만 있는 경우
+  const numOnly = parseInt(cleaned.replace(/\D/g, ""), 10);
+  return isNaN(numOnly) ? null : numOnly;
+}
+
+/** 네이버 Region API 응답을 내부 Article 모델로 변환 */
+export function transformNaverRegionArticle(raw: NaverRegionArticleItem): Article {
+  // 거래 유형 매핑
+  const tradeType: TradeType = NAVER_TRADE_TYPE_MAP[raw.tradeTypeName] ?? "SALE";
+
+  // 건물 유형 매핑
+  const buildingType: BuildingType =
+    NAVER_BUILDING_TYPE_MAP[raw.realEstateTypeName] ?? "APT";
+
+  // 가격 처리 (거래 유형에 따라 분기)
+  let dealPrice: number | null = null;
+  let deposit: number | null = null;
+  let monthlyRent: number | null = null;
+
+  const mainPrice = parseNaverPriceString(raw.dealOrWarrantPrc);
+  const rentPrice = parseNaverPriceString(raw.rentPrc);
+
+  if (tradeType === "SALE") {
+    dealPrice = mainPrice;
+  } else if (tradeType === "JEONSE") {
+    deposit = mainPrice;
+  } else if (tradeType === "MONTHLY") {
+    deposit = mainPrice;
+    monthlyRent = rentPrice;
+  }
+
+  // 면적 처리
+  const supplyArea = Number(raw.area1) || 0;
+  const exclusiveArea = Number(raw.area2) || 0;
+
+  // 층 정보 파싱
+  const { floor, totalFloor } = parseFloorInfo(raw.floorInfo ?? "");
+
+  // cortarNo로 구/동 정보 추출
+  const { gu, dong } = getGuDongFromCortarNo(raw.cortarNo || "");
+
+  // 중개사명 (우선순위: cpName -> realtorName)
+  const agentName = raw.cpName || raw.realtorName || "";
+
+  // 가격 텍스트 생성
+  let priceText = raw.dealOrWarrantPrc || "";
+  if (tradeType === "MONTHLY" && raw.rentPrc) {
+    priceText = `${raw.dealOrWarrantPrc}/${raw.rentPrc}`;
+  }
+
+  return {
+    id: raw.articleNo,
+    tradeType,
+    buildingType,
+    articleName: raw.articleName || raw.buildingName || "",
+
+    // 위치
+    address: "",
+    roadAddress: "",
+    gu,
+    dong,
+    lat: Number(raw.latitude) || 0,
+    lng: Number(raw.longitude) || 0,
+
+    // 가격
+    dealPrice,
+    deposit,
+    monthlyRent,
+    priceText,
+
+    // 면적
+    supplyArea,
+    exclusiveArea,
+    supplyAreaPyeong: m2ToPyeong(supplyArea),
+    exclusiveAreaPyeong: m2ToPyeong(exclusiveArea),
+
+    // 건물 정보
+    floor,
+    totalFloor,
+    buildYear: null,
+    direction: raw.direction || null,
+    roomCount: null,
+    bathroomCount: null,
+
+    // 메타
+    description: raw.articleFeatureDesc ?? "",
+    confirmDate: raw.articleConfirmYmd ?? "",
+    agentName,
+    articleUrl: `https://new.land.naver.com/articles/${raw.articleNo}`,
+
+    // 이미지 (Region API는 전체 URL 제공)
+    thumbnailUrl: raw.representativeImgUrl || null,
+
+    // 상세 정보 가용 여부
     hasDetailInfo: false,
   };
 }

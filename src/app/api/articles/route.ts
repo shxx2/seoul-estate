@@ -322,9 +322,9 @@ export async function GET(req: NextRequest) {
       articles: NaverComplexArticleItem[];
       complexCount: number;
     }> => {
-      // 2-1. bounds를 5x5 = 25타일로 분할하여 각 타일에서 complexList 조회
-      // 네이버 API가 center 좌표에 민감하므로 더 세밀한 타일링 필요
-      const tiles = splitBoundsIntoTiles(bounds, 5);
+      // 2-1. bounds를 3x3 = 9타일로 분할하여 각 타일에서 complexList 조회
+      // 더 많은 타일은 rate limit 문제 발생
+      const tiles = splitBoundsIntoTiles(bounds, 3);
 
       const tileComplexPromises = tiles.map((tile) =>
         fetchComplexList({

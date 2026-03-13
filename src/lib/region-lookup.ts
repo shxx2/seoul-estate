@@ -98,7 +98,7 @@ export function splitBoundsIntoTiles(bounds: BoundsParams, gridSize: number = 2)
         top: tileTop,
         lft: tileLft,
         rgt: tileRgt,
-        z: bounds.z + 1, // 타일링시 줌 레벨 증가
+        z: bounds.z + 2, // 타일링시 줌 레벨 증가 (z=17로 더 많은 단지 캡처)
       });
     }
   }

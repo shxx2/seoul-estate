@@ -104,6 +104,8 @@ export function normalizeArticleResults(
   const deduped = dedupeArticlesById(rawArticles);
 
   const inBounds = deduped.filter((article) => {
+    // lat/lng이 0인 매물은 Complex API에서 좌표 없이 반환된 것이므로 bounds 체크 건너뜀
+    if (article.lat === 0 && article.lng === 0) return true;
     return (
       article.lat >= options.bounds.btm &&
       article.lat <= options.bounds.top &&
